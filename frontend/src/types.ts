@@ -106,9 +106,16 @@ export interface ServiceHealthItem {
   name: string;
   rps: number;
   errorRate: number;
-  p99LatencyMs: number;
-  status: 'Stable' | 'Degraded' | 'Critical' | string;
+  p99LatencyMs?: number;
+  p95LatencyMs?: number;
+  status: 'Stable' | 'Degraded' | 'Critical' | 'Healthy' | 'Warning' | string;
   region?: string;
+  tier?: string;
+  cpuPercent?: number;
+  memoryPercent?: number;
+  replicas?: number;
+  dependencies?: string[];
+  recentEvents?: string[];
 }
 
 export interface AutonomousAction {

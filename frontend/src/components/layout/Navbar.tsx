@@ -3,9 +3,10 @@ import { Menu, X, Shield, Terminal } from 'lucide-react';
 
 interface NavbarProps {
   isBackendOnline: boolean;
+  onLaunchConsole?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline }) => {
+export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline, onLaunchConsole }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -66,13 +67,13 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline }) => {
           </button>
         </div>
 
-        {/* Right Telemetry & Status Readout */}
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-4 font-mono text-sm xl:text-base">
+        {/* Right Telemetry & Status Readout & Console Launch */}
+        <div className="flex items-center gap-4 lg:gap-6">
+          <div className="hidden md:flex items-center gap-3 font-mono text-sm">
             <span className="text-[#737373] tracking-widest uppercase">
-              SYSTEM STATUS:
+              STATUS:
             </span>
-            <div className={`px-4 py-2 border transition-all duration-300 font-mono font-bold tracking-wider flex items-center gap-2.5 ${
+            <div className={`px-3 py-1.5 border transition-all duration-300 font-mono font-bold tracking-wider flex items-center gap-2 ${
               isBackendOnline 
                 ? 'bg-[#FFFFFF] text-[#000000] border-[#FFFFFF]' 
                 : 'bg-[#0A0A0A] text-[#888888] border-[#333333] animate-pulse'
@@ -81,6 +82,17 @@ export const Navbar: React.FC<NavbarProps> = ({ isBackendOnline }) => {
               <span>{isBackendOnline ? 'OPTIMAL' : 'OFFLINE'}</span>
             </div>
           </div>
+
+          <button
+            onClick={() => {
+              if (onLaunchConsole) onLaunchConsole();
+              else window.location.hash = '#/console';
+            }}
+            className="px-4 py-2 bg-[#fafafa] hover:bg-white text-[#09090b] font-mono font-bold text-xs tracking-wider uppercase rounded flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            <span>AUTOPILOT CONSOLE</span>
+          </button>
 
           {/* Mobile Menu Button */}
           <button 

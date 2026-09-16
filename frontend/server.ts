@@ -163,6 +163,28 @@ async function startServer() {
     });
   });
 
+  // Catch-all transparent proxy for all CORTEX API endpoints (topology, twin, forecast, optimizer, cortex, audit, chaos, etc.)
+  app.all('/api/*', async (req, res) => {
+    try {
+      const targetUrl = `${PYTHON_BACKEND}${req.originalUrl}`;
+      const options: RequestInit = {
+        method: req.method,
+        headers: {
+          'Content-Type': req.headers['content-type'] || 'application/json',
+          'Accept': 'application/json',
+        },
+      };
+      if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && Object.keys(req.body).length > 0) {
+        options.body = JSON.stringify(req.body);
+      }
+      const resp = await fetch(targetUrl, options);
+      const data = await resp.json();
+      res.status(resp.status).json(data);
+    } catch (e: any) {
+      res.status(502).json({ error: 'Gateway failure contacting CORTEX Python backend', message: e.message });
+    }
+  });
+
   // Vite Middleware integration for dev & production static serving
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

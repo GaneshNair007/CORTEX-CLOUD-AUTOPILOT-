@@ -18,10 +18,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-# Add project root to sys.path
-PROJECT_ROOT = Path(__file__).resolve().parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+# Add project root and backend directory to sys.path
+BACKEND_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BACKEND_DIR.parent
+for p in (str(REPO_ROOT), str(BACKEND_DIR)):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+PROJECT_ROOT = BACKEND_DIR
 
 import interfaces
 from rag.retrieve import retrieve
@@ -92,6 +95,13 @@ class OptimizeRequest(BaseModel):
     mode: Optional[str] = "BALANCED"
     current_replicas: Optional[int] = 6
     forecast_rps: Optional[float] = 480.0
+    target_service: Optional[str] = "payment-service"
+    predicted_traffic: Optional[float] = None
+
+class ForecastPredictRequest(BaseModel):
+    service: Optional[str] = "payment-service"
+    horizon: Optional[int] = 30
+    history: Optional[List[float]] = None
 
 class ApprovalResolveRequest(BaseModel):
     approval_id: str
@@ -153,17 +163,27 @@ def api_simulate_twin(req: SimulateRequest):
 # Forecasting & Optimization Endpoints
 # -----------------------------------------------------------------------------
 @app.get("/api/forecast")
+@app.get("/api/forecasting/predict")
 def api_get_forecast(horizon: int = Query(30, ge=5, le=60)):
     history = forecaster.generate_live_telemetry_series(window_points=30)
     prediction = forecaster.predict_workload(horizon_minutes=horizon)
     return {"history": history, "prediction": prediction}
 
+@app.post("/api/forecasting/predict")
+def api_post_forecast(req: ForecastPredictRequest):
+    history = req.history or forecaster.generate_live_telemetry_series(window_points=30)
+    horizon = req.horizon or 30
+    prediction = forecaster.predict_workload(horizon_minutes=horizon)
+    return {"service": req.service, "history": history, "prediction": prediction}
+
 @app.post("/api/optimizer")
+@app.post("/api/optimizer/solve")
 def api_optimize(req: OptimizeRequest):
+    rps = req.forecast_rps if req.predicted_traffic is None else req.predicted_traffic
     return optimizer.optimize(
-        mode=req.mode,
-        current_replicas=req.current_replicas,
-        forecast_rps=req.forecast_rps
+        mode=req.mode or "BALANCED",
+        current_replicas=req.current_replicas or 6,
+        forecast_rps=rps or 480.0
     )
 
 

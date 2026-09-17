@@ -161,7 +161,18 @@ class CortexGuard:
             final_decision = "REQUIRE_APPROVAL"
             reasons.append("Autonomy Level 1 (RECOMMEND): All infrastructure changes require human confirmation.")
 
+        elif self.autonomy_level == 3:
+            # Level 3 Full Autonomy: Automatically executes safe & bounded operational remediations
+            # Only catastrophic blast radius (>=90) requires human intervention
+            if blast["score"] >= 90:
+                final_decision = "REQUIRE_APPROVAL"
+                reasons.append("Autonomy Level 3 Safeguard: Catastrophic blast radius (score >= 90) requires human authorization.")
+            else:
+                final_decision = "ALLOW"
+                reasons.append("Autonomy Level 3 (AUTOPILOT): Action authorized for autonomous execution within validated invariant envelope.")
+
         elif policy_decision == "REQUIRE_APPROVAL" or action_type in envelope["approval_required"] or blast["score"] >= 60:
+            # Level 2 Guarded Autonomy: Low-risk allowed, high-risk or high blast radius requires approval
             final_decision = "REQUIRE_APPROVAL"
             if action_type == "rollback_deployment":
                 safer_alternatives.append("canary_rollback_1_replica")

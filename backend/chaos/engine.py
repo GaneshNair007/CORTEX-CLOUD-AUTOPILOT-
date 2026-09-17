@@ -147,6 +147,45 @@ class ChaosEngine:
             "details": result
         }
 
+    def inject_cascading_failure(
+        self,
+        root_service: str = "postgres",
+        cascade_chain: Optional[List[str]] = None,
+        duration_sec: int = 30,
+        environment: str = "sandbox"
+    ) -> Dict[str, Any]:
+        """
+        Simulates a multi-tier cascading cloud outage starting from root_service
+        and propagating up to dependent upstream services (e.g. postgres -> payment-service -> api-gateway).
+        """
+        if environment.lower() not in self.ALLOWED_ENVIRONMENTS:
+            raise PermissionError(f"SAFETY INVARIANT: Cascading failure injection strictly rejected for environment '{environment}'.")
+
+        chain = cascade_chain or [root_service, "payment-service", "api-gateway"]
+        results = {}
+        for idx, svc in enumerate(chain):
+            if idx == 0:
+                res = self.inject_fault(svc, "latency", duration_sec=duration_sec, intensity=250.0, environment=environment)
+            elif idx == 1:
+                res = self.inject_fault(svc, "error_burst", duration_sec=duration_sec, intensity=40.0, environment=environment)
+            else:
+                res = self.inject_fault(svc, "latency", duration_sec=duration_sec, intensity=100.0, environment=environment)
+            results[svc] = res
+
+        ledger.record_event(
+            event_type="chaos_cascading_failure_injected",
+            actor="cortex-chaos-engine",
+            payload={"root_service": root_service, "cascade_chain": chain, "tier_count": len(chain)}
+        )
+
+        return {
+            "status": "CASCADING_ACTIVE",
+            "root_service": root_service,
+            "cascade_chain": chain,
+            "tier_count": len(chain),
+            "tier_results": results
+        }
+
     def clear_faults(
         self,
         target_service: str,

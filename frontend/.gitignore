@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+.template-reference/
+test-results/
+playwright-report/
+artifacts/
+dist-static/

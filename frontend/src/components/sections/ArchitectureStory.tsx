@@ -101,7 +101,7 @@ export const ArchitectureStory: React.FC = () => {
            {NODES.map((n, i) => (
              <img 
                 key={n.id}
-                ref={el => imageRefs.current[i] = el}
+                ref={el => { imageRefs.current[i] = el; }}
                 src={n.img} 
                 alt={n.title}
                 className="absolute inset-0 w-full h-full object-cover shadow-2xl mix-blend-luminosity"
@@ -140,37 +140,37 @@ export const ArchitectureStory: React.FC = () => {
           <div className="relative w-full max-w-[1400px] h-[60vh]">
             {/* We position the text strictly based on the SVG path coordinates (scaled conceptually to percentages) */}
             {/* Node 1: 50,50 */}
-            <div ref={el => detailRefs.current[0] = el} className="absolute left-[3.5%] top-[5%] -translate-y-full pb-4">
+            <div ref={el => { detailRefs.current[0] = el; }} className="absolute left-[3.5%] top-[5%] -translate-y-full pb-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[0].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[0].desc}</p>
             </div>
             {/* Node 2: 300,50 */}
-            <div ref={el => detailRefs.current[1] = el} className="absolute left-[21.4%] top-[5%] -translate-y-full pb-4">
+            <div ref={el => { detailRefs.current[1] = el; }} className="absolute left-[21.4%] top-[5%] -translate-y-full pb-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[1].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[1].desc}</p>
             </div>
             {/* Node 3: 475,200 (Midpoint of 350->600 segment) */}
-            <div ref={el => detailRefs.current[2] = el} className="absolute left-[34%] top-[50%] -translate-y-full pb-4">
+            <div ref={el => { detailRefs.current[2] = el; }} className="absolute left-[34%] top-[50%] -translate-y-full pb-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[2].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[2].desc}</p>
             </div>
             {/* Node 4: 650,350 */}
-            <div ref={el => detailRefs.current[3] = el} className="absolute left-[46.4%] top-[87.5%] pt-4">
+            <div ref={el => { detailRefs.current[3] = el; }} className="absolute left-[46.4%] top-[87.5%] pt-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[3].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[3].desc}</p>
             </div>
             {/* Node 5: 900,350 */}
-            <div ref={el => detailRefs.current[4] = el} className="absolute left-[64.2%] top-[87.5%] pt-4">
+            <div ref={el => { detailRefs.current[4] = el; }} className="absolute left-[64.2%] top-[87.5%] pt-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[4].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[4].desc}</p>
             </div>
             {/* Node 6: 1075,200 (Midpoint of 950->1200) */}
-            <div ref={el => detailRefs.current[5] = el} className="absolute left-[77%] top-[50%] pt-4">
+            <div ref={el => { detailRefs.current[5] = el; }} className="absolute left-[77%] top-[50%] pt-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[5].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[5].desc}</p>
             </div>
             {/* Node 7: 1250,50 */}
-            <div ref={el => detailRefs.current[6] = el} className="absolute left-[89%] top-[5%] -translate-y-full pb-4">
+            <div ref={el => { detailRefs.current[6] = el; }} className="absolute left-[89%] top-[5%] -translate-y-full pb-4">
               <h3 className="font-display text-4xl font-extrabold text-[#FFFFFF]">{NODES[6].title}</h3>
               <p className="font-mono text-sm text-[#C8C8C8] max-w-[200px]">{NODES[6].desc}</p>
             </div>
@@ -181,3 +181,4 @@ export const ArchitectureStory: React.FC = () => {
     </section>
   );
 };
+

@@ -33,6 +33,11 @@ from twin.simulator import twin
 from cortex.guard import guard
 from cortex.policies import ACTIVE_POLICIES
 from cortex.ledger import ledger
+from cortex.gateway import execution_gateway
+from models.proposals import ActionProposal
+from chaos.engine import chaos_engine
+from control_plane.pipeline import control_plane
+from persistence.database import db_manager
 from forecasting.forecaster import forecaster
 from forecasting.anomalies import anomaly_detector
 from optimization.optimizer import optimizer
@@ -181,10 +186,25 @@ def api_list_approvals():
 @app.post("/api/cortex/approvals/resolve")
 def api_resolve_approval(req: ApprovalResolveRequest):
     res = guard.resolve_approval(req.approval_id, req.approved, req.approver)
-    if res.get("status") == "success" and req.approved:
-        # Execute the approved action
-        act_res = execute_action(res["action_type"], res["params"])
-        res["execution_result"] = act_res
+    exec_res = None
+    if req.approved:
+        execution_gateway.approve_action(req.approval_id, req.approver)
+        token = execution_gateway.approved_tokens.get(req.approval_id)
+        if token:
+            proposal = ActionProposal(
+                proposal_id=token.proposal_id,
+                incident_id=token.incident_id,
+                action_type=token.action_type,
+                target=token.target,
+                params=token.params,
+                risk_score=token.risk_score,
+                reason=token.reason,
+                generated_by="operator-approval"
+            )
+            exec_res = execution_gateway.evaluate_and_execute(proposal, approval_id=req.approval_id)
+            res["execution_result"] = exec_res.model_dump(mode="json")
+    else:
+        execution_gateway.reject_action(req.approval_id, req.approver)
     return res
 
 @app.post("/api/cortex/autonomy")
@@ -195,6 +215,7 @@ def api_set_autonomy(req: AutonomyRequest):
 @app.post("/api/cortex/kill-switch")
 def api_set_kill_switch(req: KillSwitchRequest):
     guard.set_kill_switch(req.engaged, req.reason or "")
+    execution_gateway.set_freeze_mutations(req.engaged)
     return {"status": "success", "kill_switch_engaged": guard.kill_switch_engaged}
 
 
@@ -212,39 +233,42 @@ def api_retrieve(req: RetrieveRequest):
 @app.post("/api/tools/action")
 def api_action(req: ActionRequest):
     """
-    Guarded action dispatch: Every action must pass through CORTEX Guard.
+    Guarded action dispatch: Every action must pass through CortexExecutionGateway.
     """
-    eval_res = guard.evaluate_action(
+    target = req.params.get("service") or req.params.get("target") or "payment-service"
+    proposal = ActionProposal(
+        incident_id=req.incident_id or "INC-MANUAL",
         action_type=req.action_type,
+        target=target,
         params=req.params,
-        incident_id=req.incident_id,
-        actor=req.actor
+        risk_score=50,
+        reason=f"Invocation by {req.actor}",
+        generated_by=req.actor or "operator"
     )
 
-    if eval_res["decision"] == "BLOCK":
+    exec_result = execution_gateway.evaluate_and_execute(proposal)
+
+    if exec_result.status == "BLOCKED":
+        if "approval_id" in exec_result.output:
+            return {
+                "status": "approval_required",
+                "decision": "REQUIRE_APPROVAL",
+                "approval_id": exec_result.output["approval_id"],
+                "message": f"Action '{req.action_type}' requires human authorization.",
+                "execution_result": exec_result.model_dump(mode="json")
+            }
         return {
             "status": "blocked",
             "decision": "BLOCK",
-            "message": f"Action '{req.action_type}' was BLOCKED by CORTEX Guard.",
-            "evaluation": eval_res
+            "message": f"Action '{req.action_type}' was BLOCKED by CORTEX Execution Gateway: {exec_result.output.get('reason', 'Blocked by policy')}",
+            "execution_result": exec_result.model_dump(mode="json")
         }
 
-    elif eval_res["decision"] == "REQUIRE_APPROVAL":
-        return {
-            "status": "approval_required",
-            "decision": "REQUIRE_APPROVAL",
-            "approval_id": eval_res["approval_id"],
-            "message": f"Action '{req.action_type}' requires human authorization.",
-            "evaluation": eval_res
-        }
-
-    # ALLOW: Controlled execution
-    act_res = execute_action(req.action_type, req.params)
     return {
         "status": "success",
         "decision": "ALLOW",
-        "action_result": act_res,
-        "evaluation": eval_res
+        "action_result": exec_result.model_dump(mode="json"),
+        "verification": exec_result.output
     }
 
 
@@ -290,33 +314,53 @@ def api_get_benchmark():
 # -----------------------------------------------------------------------------
 @app.post("/api/chaos/inject")
 def api_chaos_inject(req: ChaosRequest):
-    """Simulates controlled infrastructure faults."""
-    target = req.target_service or "payment-api"
-    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-
-    if req.fault_type == "pod_kill":
-        topology.update_node_health(target, "Degraded", p95_ms=320.0, error_rate=0.08)
-        desc = f"Simulated container crash in {target} pod replica."
-    elif req.fault_type == "cpu_saturation":
-        topology.update_node_health(target, "Degraded", p95_ms=780.0, error_rate=0.14)
-        desc = f"Injected synthetic CPU stress loop (98% saturation) on {target}."
-    elif req.fault_type == "db_outage":
-        topology.update_node_health("user-profile-db", "Outage", p95_ms=4500.0, error_rate=0.48)
-        desc = "Simulated primary PostgreSQL connection exhaustion and advisory lock contention."
-    elif req.fault_type == "latency":
-        topology.update_node_health(target, "Degraded", p95_ms=420.0, error_rate=0.02)
-        desc = f"Added 300ms synthetic network delay on {target} upstream ingress."
-    else:
-        topology.update_node_health(target, "Degraded", p95_ms=290.0, error_rate=0.06)
-        desc = f"Triggered 10x traffic spike on {target} (1200 RPS)."
+    """Executes real controlled chaos fault injection in sandbox."""
+    target = req.target_service or "payment-service"
+    fault_map = {
+        "pod_kill": "crash",
+        "cpu_saturation": "cpu_stress",
+        "db_outage": "db_outage",
+        "latency": "latency",
+        "traffic_spike": "traffic_flood"
+    }
+    actual_fault = fault_map.get(req.fault_type, req.fault_type)
+    try:
+        res = chaos_engine.inject_fault(
+            target_service=target,
+            fault_type=actual_fault,
+            duration_sec=30,
+            intensity=200.0 if actual_fault == "latency" else 1.0,
+            environment="sandbox"
+        )
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
 
     emit_event({
         "type": "chaos_fault_injected",
-        "payload": {"fault_type": req.fault_type, "target": target, "description": desc, "timestamp": ts}
+        "payload": {"fault_type": req.fault_type, "target": target, "result": res}
     })
-    ledger.record_event("chaos_fault_injected", "chaos-engine", {"fault": req.fault_type, "target": target})
+    return {"status": "injected", "fault": req.fault_type, "target": target, "details": res}
 
-    return {"status": "injected", "fault": req.fault_type, "target": target, "description": desc}
+@app.get("/api/chaos/experiments")
+def api_list_chaos_experiments():
+    return {"experiments": chaos_engine.list_active_experiments()}
+
+@app.post("/api/chaos/clear")
+def api_clear_chaos(req: ChaosRequest):
+    target = req.target_service or "payment-service"
+    return chaos_engine.clear_faults(target, environment="sandbox")
+
+
+# -----------------------------------------------------------------------------
+# Persistence: Incidents & Operations
+# -----------------------------------------------------------------------------
+@app.get("/api/incidents")
+def api_list_incidents(status: Optional[str] = None):
+    return {"incidents": db_manager.list_incidents(status=status)}
+
+@app.get("/api/operations")
+def api_list_operations():
+    return {"operations": db_manager.list_operations()}
 
 
 # -----------------------------------------------------------------------------
@@ -326,128 +370,15 @@ def api_chaos_inject(req: ChaosRequest):
 def api_run_pipeline(req: PipelineRequest):
     """
     Closed-Loop Autopilot Workflow:
-    Observe -> Understand (RAG + AI Hypothesis + Critique) -> Simulate Twin ->
-    CORTEX Guard -> Execute -> Verify Telemetry -> Learn.
+    Observe -> Understand -> Predict -> Simulate -> Optimize -> Authorize -> Act -> Verify -> Learn.
+    Executed through master ControlPlanePipeline and CortexExecutionGateway.
     """
-    start_time = time.time()
-    incident_id = f"INC-{int(time.time()) % 10000}"
-    clear_events()
-
-    # 1. OBSERVE: Incident Correlated
-    emit_event({
-        "type": "incident_detected",
-        "payload": {
-            "incident_id": incident_id,
-            "service": req.service,
-            "severity": req.severity,
-            "symptom": req.symptom
-        }
-    })
-
-    # 2. UNDERSTAND: Vector Memory Retrieval & Orchestrator Agent
-    emit_event({"type": "diagnosis_started", "payload": {"incident_id": incident_id, "service": req.service}})
-    docs = retrieve(req.symptom, k=3)
-    
-    agent = IncidentAgent()
-    agent_record = agent.handle_incident({
-        "id": incident_id,
-        "service": req.service,
-        "title": f"Degradation on {req.service}",
-        "description": req.symptom
-    })
-
-    proposed_action = agent_record["action"]["type"]
-    action_params = agent_record["action"]["params"]
-
-    # Flagship Demo Scenario: If simulate_dangerous is flagged, AI proposes dangerous DB restart
-    if req.simulate_dangerous or "database" in req.symptom.lower():
-        proposed_action = "restart_database"
-        action_params = {"database": "user-profile-db"}
-
-    # 3. PREDICT & SIMULATE: Counterfactual Digital Twin & Blast Radius
-    blast = calculate_blast_radius(proposed_action, action_params)
-    simulation = twin.simulate_action(proposed_action, action_params)
-
-    emit_event({
-        "type": "simulation_completed",
-        "payload": {
-            "incident_id": incident_id,
-            "action": proposed_action,
-            "blast_radius_score": blast["score"],
-            "risk_level": blast["risk_level"],
-            "affected_services": blast["affected_services"]
-        }
-    })
-
-    # 4. AUTHORIZE: CORTEX Guard Deterministic Safety Gate
-    guard_eval = guard.evaluate_action(
-        action_type=proposed_action,
-        params=action_params,
-        incident_id=incident_id,
-        actor="cortex-autopilot"
+    return control_plane.run_control_loop(
+        service=req.service or "payment-service",
+        severity=req.severity or "P1",
+        symptom=req.symptom or "HTTP 500 error spike",
+        simulate_dangerous=bool(req.simulate_dangerous)
     )
-
-    action_executed = False
-    action_result = None
-    verification_result = None
-
-    # 5. ACT: Controlled Execution (if ALLOW)
-    if guard_eval["decision"] == "ALLOW":
-        action_result = execute_action(proposed_action, action_params)
-        action_executed = True
-        emit_event({"type": "action_executed", "payload": action_result})
-
-        # 6. VERIFY: Closed-Loop Post-Action SLO Check
-        verification_result = verifier.verify_action(
-            action_type=proposed_action,
-            target_service=req.service,
-            pre_metrics={"p95_ms": 680.0, "error_rate": 0.18},
-            post_metrics={"p95_ms": 138.0, "error_rate": 0.003},
-            correlation_id=incident_id
-        )
-
-        emit_event({
-            "type": "incident_resolved",
-            "payload": {
-                "incident_id": incident_id,
-                "service": req.service,
-                "status": "Healthy (SLO target restored)",
-                "verification": verification_result["summary"]
-            }
-        })
-
-    elif guard_eval["decision"] == "REQUIRE_APPROVAL":
-        action_result = {"status": "approval_required", "approval_id": guard_eval["approval_id"]}
-        emit_event({
-            "type": "action_gated",
-            "payload": {"incident_id": incident_id, "approval_id": guard_eval["approval_id"], "risk": blast["score"]}
-        })
-
-    else:  # BLOCK
-        action_result = {"status": "blocked", "reasons": guard_eval["reasons"]}
-        emit_event({
-            "type": "action_blocked",
-            "payload": {"incident_id": incident_id, "action": proposed_action, "reasons": guard_eval["reasons"]}
-        })
-
-    total_duration = round(time.time() - start_time, 3)
-
-    return {
-        "status": "success",
-        "incident_id": incident_id,
-        "service": req.service,
-        "total_duration_sec": total_duration,
-        "hypothesis": agent_record.get("hypothesis"),
-        "critique": agent_record.get("critique"),
-        "confidence": agent_record.get("confidence"),
-        "proposed_action": proposed_action,
-        "guard_decision": guard_eval["decision"],
-        "blast_radius": blast,
-        "simulation": simulation,
-        "action_result": action_result,
-        "verification": verification_result,
-        "events": get_events()
-    }
 
 
 if __name__ == "__main__":

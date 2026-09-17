@@ -174,6 +174,11 @@ class MultiObjectiveOptimizer:
             "weights": weights,
             "current_replicas": current_replicas,
             "forecast_rps": forecast_rps,
+            "recommended_replicas": best_candidate["replicas"],
+            "trade_offs": {
+                "latency_ms": best_candidate["expected_p95_ms"],
+                "hourly_cost_usd": best_candidate["estimated_cost_per_hr"]
+            },
             "candidates": scored_candidates,
             "selected_candidate": best_candidate,
             "pareto_count": len(pareto_candidates),

@@ -45,9 +45,31 @@ def remember(record: dict) -> None:
 
 
 def execute_action(action_type: str, params: dict) -> dict:
-    """Execute a (mock) remediation action. Returns {"status": str, ...}."""
-    from tools.actions import execute_action as _impl
-    return _impl(action_type, params)
+    """
+    Executes a bounded remediation action strictly through CORTEX Execution Gateway.
+    Guarantees that all callers (legacy or new) pass through the same deterministic authorization gate.
+    """
+    from models.proposals import ActionProposal
+    from cortex.gateway import execution_gateway
+
+    target = params.get("service", params.get("deployment", "default-service"))
+    proposal = ActionProposal(
+        incident_id="LEGACY-CALL",
+        action_type=action_type,
+        target=target,
+        params=params,
+        confidence=1.0,
+        rationale="Executed via legacy interfaces contract facade.",
+        generated_by="interfaces-facade"
+    )
+    result = execution_gateway.evaluate_and_execute(proposal)
+    return {
+        "status": "success" if result.status == "SUCCESS" else result.status.lower(),
+        "action": action_type,
+        "params": params,
+        "result": result.output,
+        "operation_id": result.operation_id
+    }
 
 
 def emit_event(event: dict) -> None:

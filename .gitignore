@@ -17,6 +17,9 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+*.db
+*.sqlite
+*.sqlite3
 
 # Environment
 .env
@@ -32,25 +35,25 @@ backend/rag/chroma_db/
 skills-lock.json
 
 # Root-level legacy files (moved to backend/)
-api_server.py
-app.py
-interfaces.py
-main.py
-requirements.txt
-ui.html
-index.html
+/api_server.py
+/app.py
+/interfaces.py
+/main.py
+/requirements.txt
+/ui.html
+/index.html
 
 # Root-level legacy directories (moved to backend/)
-rag/
-tools/
-llm/
-orchestrator/
-data/
-tests/
-examples/
-scratch/
-scripts/
-ui/
+/rag/
+/tools/
+/llm/
+/orchestrator/
+/data/
+/tests/
+/examples/
+/scratch/
+/scripts/
+/ui/
 
 # Old frontend folder
 sre-console (1)/

@@ -1,0 +1,36 @@
+{
+  "trained_at": "2026-09-16T18:51:11Z",
+  "model_type": "xgboost",
+  "train_samples": 1147,
+  "test_samples": 287,
+  "metrics": {
+    "mae": 17.14,
+    "rmse": 20.2,
+    "smape_pct": 7.12,
+    "mape_pct": 7.48
+  },
+  "baselines": {
+    "last_value": {
+      "mae": 14.25,
+      "rmse": 17.42,
+      "smape_pct": 5.97,
+      "mape_pct": 6.22
+    },
+    "moving_average_5": {
+      "mae": 30.59,
+      "rmse": 33.3,
+      "smape_pct": 12.29,
+      "mape_pct": 13.28
+    }
+  },
+  "residual_std": 10.346380612786268,
+  "feature_names": [
+    "lag_1",
+    "lag_2",
+    "lag_5",
+    "rolling_mean_5",
+    "rolling_std_5",
+    "cpu_percent_lag_1",
+    "p95_ms_lag_1"
+  ]
+}

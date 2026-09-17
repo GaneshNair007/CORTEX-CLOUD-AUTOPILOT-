@@ -14,7 +14,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from llm.client import LLMClient  # noqa: E402
-from interfaces import emit_event, execute_action, remember, retrieve  # noqa: E402
+from interfaces import emit_event, remember, retrieve  # noqa: E402
+from models.proposals import ActionProposal  # noqa: E402
 
 CONFIDENCE_AUTO_EXECUTE = 0.6  # below this we only recommend, never act
 
@@ -156,25 +157,33 @@ class IncidentAgent:
         emit_event({"type": "self_critique", "payload": {
             "incident_id": incident["id"], "revised_confidence": revised}})
 
-        # 4. Confidence-gated action
+        # 4. Action Proposal Generation & Gateway Authorization
         action_type, params = self._decide_action(incident, hypothesis)
-        risk = ACTION_RISK.get(action_type, "high")
-        if risk == "high":
-            action_result = {"status": "approval_required",
-                             "reason": f"{action_type} is high-risk; human must approve"}
-            emit_event({"type": "action_gated", "payload": {
-                "incident_id": incident["id"], "action": action_type, "risk": risk}})
-        elif revised >= CONFIDENCE_AUTO_EXECUTE:
-            action_result = execute_action(action_type, params)
-            emit_event({"type": "action_executed", "payload": {
-                "incident_id": incident["id"], "action": action_type,
-                "risk": risk, "result": action_result}})
-        else:
-            action_result = {"status": "recommended_only",
-                             "reason": f"confidence {revised:.2f} below "
-                                       f"{CONFIDENCE_AUTO_EXECUTE} auto-execute threshold"}
-            emit_event({"type": "action_withheld", "payload": {
-                "incident_id": incident["id"], "action": action_type, "confidence": revised}})
+        service = incident.get("service", "payments-api")
+
+        proposal = ActionProposal(
+            incident_id=incident["id"],
+            action_type=action_type,
+            target=service,
+            params=params,
+            confidence=revised,
+            evidence_ids=[d["id"] for d in docs],
+            rationale=f"Hypothesis: {hypothesis[:200]}. Self-critique confidence: {revised:.2f}",
+            generated_by="cortex-agent"
+        )
+        emit_event({"type": "proposal_created", "payload": proposal.model_dump(mode="json")})
+
+        # CRITICAL INVARIANT: Agent only produces ActionProposal; execution belongs to Gateway
+        action_result = {
+            "status": "PROPOSED",
+            "result": "PROPOSED",
+            "proposal": proposal.model_dump(mode="json"),
+            "action": action_type,
+            "params": params
+        }
+        emit_event({"type": "proposal_generated", "payload": {
+            "incident_id": incident["id"], "action": action_type,
+            "proposal": proposal.model_dump(mode="json")}})
 
         # 5. Memory write-back so future similar incidents resolve faster
         record = {

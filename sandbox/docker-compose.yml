@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=api-gateway
+      - SERVICE_PORT=8010
+    ports:
+      - "8010:8010"
+    depends_on:
+      - auth-service
+      - order-service
+      - payment-service
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=auth-service
+      - SERVICE_PORT=8011
+    ports:
+      - "8011:8011"
+    depends_on:
+      - redis
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=payment-service
+      - SERVICE_PORT=8012
+    ports:
+      - "8012:8012"
+    depends_on:
+      - postgres
+
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=order-service
+      - SERVICE_PORT=8013
+    ports:
+      - "8013:8013"
+    depends_on:
+      - postgres
+      - inventory-service
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=inventory-service
+      - SERVICE_PORT=8014
+    ports:
+      - "8014:8014"
+    depends_on:
+      - postgres
+
+  notification-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=notification-worker
+      - SERVICE_PORT=8015
+    ports:
+      - "8015:8015"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "8016:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cortex
+      POSTGRES_PASSWORD: cortex_password
+      POSTGRES_DB: cortex_db
+    ports:
+      - "8017:5432"
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml

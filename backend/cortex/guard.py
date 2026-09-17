@@ -7,10 +7,16 @@ Evaluates capability envelopes, blast radius, policy rules, and human-in-the-loo
 from typing import Dict, Any, List, Optional
 import time
 import uuid
-from cortex.policies import ACTIVE_POLICIES
-from cortex.ledger import ledger
-from topology.blast_radius import calculate_blast_radius
-from twin.simulator import twin
+try:
+    from backend.cortex.policies import ACTIVE_POLICIES
+    from backend.cortex.ledger import ledger
+    from backend.topology.blast_radius import calculate_blast_radius
+    from backend.twin.simulator import twin
+except ImportError:
+    from cortex.policies import ACTIVE_POLICIES
+    from cortex.ledger import ledger
+    from topology.blast_radius import calculate_blast_radius
+    from twin.simulator import twin
 
 
 class CortexGuard:
@@ -58,7 +64,8 @@ class CortexGuard:
             ],
             "approval_required": [
                 "rollback_deployment",
-                "scale_deployment"
+                "scale_deployment",
+                "scale_service"
             ],
             "blocked": [
                 "restart_database",

@@ -10,6 +10,8 @@ import time
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+import threading
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LEDGER_FILE_PATH = PROJECT_ROOT / "tools" / "evidence_ledger.jsonl"
 
@@ -18,6 +20,7 @@ class EvidenceLedger:
     def __init__(self, path: Path = LEDGER_FILE_PATH):
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
         self.last_hash = self._get_last_hash()
 
     def _get_last_hash(self) -> str:
@@ -36,27 +39,30 @@ class EvidenceLedger:
 
     def record_event(self, event_type: str, actor: str, payload: Dict[str, Any], correlation_id: Optional[str] = None) -> Dict[str, Any]:
         """Appends an event to the ledger and computes the new cryptographic hash."""
-        ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        record_content = {
-            "timestamp": ts,
-            "event_type": event_type,
-            "actor": actor,
-            "correlation_id": correlation_id or "CORR-000",
-            "payload": payload,
-            "previous_hash": self.last_hash
-        }
+        with self._lock:
+            # Re-read last hash to ensure fresh chain head
+            self.last_hash = self._get_last_hash()
+            ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            record_content = {
+                "timestamp": ts,
+                "event_type": event_type,
+                "actor": actor,
+                "correlation_id": correlation_id or "CORR-000",
+                "payload": payload,
+                "previous_hash": self.last_hash
+            }
 
-        # Compute SHA-256 hash
-        serialized = json.dumps(record_content, sort_keys=True)
-        record_hash = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-        record_content["hash"] = record_hash
+            # Compute SHA-256 hash
+            serialized = json.dumps(record_content, sort_keys=True, default=str)
+            record_hash = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+            record_content["hash"] = record_hash
 
-        # Write to disk
-        with open(self.path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record_content) + "\n")
+            # Write to disk
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record_content, default=str) + "\n")
 
-        self.last_hash = record_hash
-        return record_content
+            self.last_hash = record_hash
+            return record_content
 
     def verify_integrity(self) -> Dict[str, Any]:
         """Validates that all chained hashes in the ledger are valid and untampered."""
@@ -81,7 +87,7 @@ class EvidenceLedger:
 
             # Recompute hash without 'hash' key
             content = {k: v for k, v in record.items() if k != "hash"}
-            serialized = json.dumps(content, sort_keys=True)
+            serialized = json.dumps(content, sort_keys=True, default=str)
             recomputed = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
             if recomputed != record_hash:

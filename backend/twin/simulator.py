@@ -73,7 +73,7 @@ class CounterfactualTwin:
                 # Temporary slight latency increase during restart, then recovery
                 simulated_p95_delta = -80  # expected improvement post-settling
 
-        elif action_type == "scale_deployment":
+        elif action_type in ("scale_deployment", "scale_service", "scale_replicas"):
             new_replicas = params.get("replicas", shadow_nodes.get(target, {}).get("replicas", 4))
             curr_replicas = shadow_nodes.get(target, {}).get("replicas", 4)
             projected_downtime_sec = 0.0
@@ -108,8 +108,11 @@ class CounterfactualTwin:
             "blast_radius": blast,
             "projected_downtime_sec": projected_downtime_sec,
             "reversibility": reversibility,
+            "predicted_p95_ms": shadow_nodes.get(target, {}).get("p95_ms", 120.0),
+            "predicted_error_rate": shadow_nodes.get(target, {}).get("error_rate", 0.005),
             "simulated_p95_delta_ms": simulated_p95_delta,
             "simulated_error_rate_delta": simulated_error_rate_delta,
+            "confidence": 0.85,
             "slo_breaches": slo_breaches,
             "affected_node_count": len(affected_nodes),
             "simulated_nodes": simulated_nodes_list,

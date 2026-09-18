@@ -120,6 +120,13 @@ export const client = {
     request<{ operations: Operation[] }>("/operations", undefined, s),
   events: (s?: AbortSignal) =>
     request<{ events: Event[] }>("/events/list", undefined, s),
+  emitNote: (message: string) =>
+    request<{ status: string; message?: string }>("/events/emit", {
+      type: "operator_note",
+      payload: { message, source: "console" },
+    }),
+  clearEvents: () =>
+    request<{ status: string; message?: string }>("/events/clear", {}),
   approvals: (s?: AbortSignal) =>
     request<{ pending_approvals: Approval[] }>(
       "/cortex/approvals",

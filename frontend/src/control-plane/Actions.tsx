@@ -68,7 +68,10 @@ export function Twin({
         >
           <label>
             Target service
-            <select disabled={action.pending}               required
+            <select
+              aria-label="Target service"
+              disabled={action.pending}
+              required
               value={target}
               onChange={(e) => {
                 setTarget(e.target.value);
@@ -83,7 +86,9 @@ export function Twin({
           </label>
           <label>
             Proposed action
-            <select disabled={action.pending}               value={kind}
+            <select
+              disabled={action.pending}
+              value={kind}
               onChange={(e) => {
                 setKind(e.target.value);
                 invalidate();
@@ -102,7 +107,9 @@ export function Twin({
           {kind === "scale_service" && (
             <label>
               Target replicas
-              <input disabled={action.pending}                 type="number"
+              <input
+                disabled={action.pending}
+                type="number"
                 min="1"
                 max="1000"
                 step="1"
@@ -276,7 +283,9 @@ export function PipelinePage({
         >
           <label>
             Backend service identifier
-            <input disabled={action.pending}               required
+            <input
+              disabled={action.pending}
+              required
               value={service}
               onChange={(e) => setService(e.target.value)}
               maxLength={100}
@@ -284,7 +293,9 @@ export function PipelinePage({
           </label>
           <label>
             Severity
-            <select disabled={action.pending}               value={severity}
+            <select
+              disabled={action.pending}
+              value={severity}
               onChange={(e) => setSeverity(e.target.value)}
             >
               {["P1", "P2", "P3"].map((s) => (
@@ -294,7 +305,9 @@ export function PipelinePage({
           </label>
           <label className="full">
             Observed symptom
-            <textarea disabled={action.pending}               required
+            <textarea
+              disabled={action.pending}
+              required
               minLength={10}
               maxLength={4000}
               value={symptom}
@@ -431,14 +444,20 @@ export function Chaos({
         >
           <label>
             Sandbox service
-            <input disabled={action.pending}               required
+            <input
+              disabled={action.pending}
+              required
               value={service}
               onChange={(e) => setService(e.target.value)}
             />
           </label>
           <label>
             Fault type
-            <select disabled={action.pending} value={fault} onChange={(e) => setFault(e.target.value)}>
+            <select
+              disabled={action.pending}
+              value={fault}
+              onChange={(e) => setFault(e.target.value)}
+            >
               {[
                 "pod_kill",
                 "cpu_saturation",
@@ -535,4 +554,3 @@ export function Chaos({
     </>
   );
 }
-

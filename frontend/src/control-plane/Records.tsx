@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { client } from "./client";
-import { useResource } from "./hooks";
+import { useAction, useResource } from "./hooks";
 import type { Incident } from "./contracts";
 import {
   Badge,
+  Button,
   Empty,
   JsonDetails,
   Modal,
+  Notice,
   Panel,
   ResourceState,
   date,
@@ -181,6 +183,11 @@ export function Operations() {
 }
 export function Events() {
   const resource = useResource(client.events);
+  const action = useAction();
+  const [note, setNote] = useState("");
+  const [confirmation, setConfirmation] = useState(false);
+  const [message, setMessage] = useState("");
+  const available = !!resource.data && !resource.error && !resource.stale;
   const [query, setQuery] = useState("");
   const rows =
     resource.data?.events
@@ -218,6 +225,101 @@ export function Events() {
           <Empty />
         )}
       </Panel>
+      <Panel
+        title="Operator notes"
+        detail="Add context to the shared activity stream."
+      >
+        <form
+          className="toolbar"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!note.trim() || !available || action.pending) return;
+            void action.run(async () => {
+              setMessage("");
+              const response = await client.emitNote(note.trim());
+              if (response.status !== "success")
+                throw new Error(
+                  response.message || "The note was not accepted.",
+                );
+              setMessage("Note added to the activity stream.");
+              setNote("");
+              resource.refresh();
+            });
+          }}
+        >
+          <input
+            aria-label="Operator note"
+            value={note}
+            maxLength={2000}
+            disabled={action.pending}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="What should the next operator know?"
+          />
+          <Button
+            type="submit"
+            disabled={!available || !note.trim() || action.pending}
+          >
+            Add note
+          </Button>
+        </form>
+        {message && <p role="status">{message}</p>}
+        {action.error && !confirmation && (
+          <Notice danger>{action.error}</Notice>
+        )}
+        <details>
+          <summary>Activity stream maintenance</summary>
+          <p className="body-copy">
+            Clear the shared event timeline. Export any information you need
+            before continuing.
+          </p>
+          <Button
+            tone="danger"
+            variant="outline"
+            disabled={!available || action.pending}
+            onClick={() => setConfirmation(true)}
+          >
+            Clear activity stream
+          </Button>
+        </details>
+      </Panel>
+      <Modal
+        open={confirmation}
+        onClose={() => {
+          if (!action.pending) setConfirmation(false);
+        }}
+        title="Clear the shared activity stream?"
+        description="This removes all timeline events from the backend event store for every operator. This cannot be undone from the console."
+      >
+        {action.error && <Notice danger>{action.error}</Notice>}
+        <div className="dialog-actions">
+          <Button
+            variant="outline"
+            disabled={action.pending}
+            onClick={() => setConfirmation(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            tone="danger"
+            disabled={!available || action.pending}
+            onClick={() =>
+              void action.run(async () => {
+                setMessage("");
+                const response = await client.clearEvents();
+                if (response.status !== "success")
+                  throw new Error(
+                    response.message || "The timeline was not cleared.",
+                  );
+                setConfirmation(false);
+                setMessage("Activity stream cleared.");
+                resource.refresh();
+              })
+            }
+          >
+            {action.pending ? "Clearing…" : "Confirm clear"}
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }

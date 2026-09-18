@@ -252,6 +252,7 @@ export function Optimizer({
           <label>
             Optimization mode
             <select
+              disabled={action.pending}
               value={mode}
               onChange={(e) => {
                 setMode(e.target.value);
@@ -273,6 +274,7 @@ export function Optimizer({
           <label>
             Current replicas
             <input
+              disabled={action.pending}
               type="number"
               min="1"
               max="1000"
@@ -288,6 +290,7 @@ export function Optimizer({
           <label>
             Forecast demand (RPS)
             <input
+              disabled={action.pending}
               type="number"
               min="1"
               max="1000000"

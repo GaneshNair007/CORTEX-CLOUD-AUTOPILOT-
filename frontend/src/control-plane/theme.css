@@ -89,12 +89,14 @@ select {
 button:disabled {
   cursor: not-allowed;
 }
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button {
-  color: inherit;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    color: inherit;
+  }
 }
 :focus-visible {
   outline: 2px solid var(--mint);

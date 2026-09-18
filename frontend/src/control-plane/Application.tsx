@@ -7,7 +7,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Layers,
   Menu,
   Search,
   Settings as SettingsIcon,
@@ -20,6 +19,7 @@ import { client } from "./client";
 import { useResource } from "./hooks";
 import { destinations, navigation, readRoute } from "./navigation";
 import { Button, Empty, Modal, Notice } from "./ui";
+import { useMotionPreference } from "./motionPreference";
 const Landing = lazy(() => import("./Landing"));
 const Overview = lazy(() => import("./Overview"));
 const Topology = lazy(() => import("./Topology"));
@@ -95,6 +95,7 @@ class ErrorBoundary extends Component<
   }
 }
 function ConsoleApp({ reconnect }: { reconnect: () => void }) {
+  const motion = useMotionPreference();
   const [route, setRoute] = useState(readRoute);
   const [palette, setPalette] = useState(false);
   const [query, setQuery] = useState("");
@@ -142,11 +143,12 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
     return (
       <>
         <a className="brand" href="#/">
-          <span className="brand-mark">
-            <Layers size={22} />
-          </span>
           <span>
-            CORTEX<small>CLOUD AUTOPILOT</small>
+            Cortex
+            <sup className="brand-spark" aria-hidden="true">
+              ✳
+            </sup>
+            <small>CLOUD AUTOPILOT</small>
           </span>
         </a>
         <div className="workspace-chip">
@@ -206,7 +208,7 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
     case "landing":
       return (
         <Suspense fallback={<div className="cp-loading">Loading CORTEX…</div>}>
-          <Landing />
+          <Landing motion={motion} />
         </Suspense>
       );
     case "console":
@@ -290,7 +292,7 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
       );
   }
   return (
-    <div className="console-shell">
+    <div className="console-shell" data-workspace={route}>
       <a
         className="skip-link"
         href="#main-content"
@@ -340,7 +342,12 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
           </a>
         </header>
         <div className="workspace-scroll">
-          <main id="main-content" tabIndex={-1} className="workspace-content">
+          <main
+            key={route}
+            id="main-content"
+            tabIndex={-1}
+            className="workspace-content"
+          >
             {!available && (
               <div className="connection-banner" role="status">
                 <WifiOff size={16} />
@@ -355,7 +362,7 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
             )}
             {available && frozen && (
               <Notice>
-                Mutations are frozen by the backend. Review CORTEX Guard before
+                The backend reports a freeze flag. Review CORTEX Guard before
                 resuming.
               </Notice>
             )}
@@ -367,6 +374,12 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
                     ?.group || "WORKSPACE"}
                 </span>
                 <h1>{destination?.label || "Page not found"}</h1>
+                <span className="page-number" aria-hidden="true">
+                  {String(
+                    destinations.findIndex((d) => d.id === route) + 1,
+                  ).padStart(2, "0")}{" "}
+                  / 21
+                </span>
               </div>
             )}
             <ErrorBoundary key={route}>
@@ -381,8 +394,17 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
               </Suspense>
             </ErrorBoundary>
             <footer className="console-footer">
-              <span>CORTEX Cloud Autopilot</span>
-              <span>Observe. Reason. Govern. Verify.</span>
+              <a href="#/">
+                Cortex<sup aria-hidden="true">✳</sup>
+              </a>
+              <span>
+                Clarity for every
+                <br />
+                cloud decision.
+              </span>
+              <a href="#/settings" className="footer-connect">
+                Connection settings <ArrowUpRight size={18} />
+              </a>
             </footer>
           </main>
         </div>

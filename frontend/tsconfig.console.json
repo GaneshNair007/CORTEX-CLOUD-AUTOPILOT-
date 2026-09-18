@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "strict": true, "allowJs": false },
+  "include": ["src/control-plane", "src/main.tsx", "src/vite-env.d.ts", "console-server.ts"]
+}

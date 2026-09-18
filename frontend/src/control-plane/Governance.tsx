@@ -40,8 +40,8 @@ export function Guard({
         );
       setResult(
         engaged
-          ? "Backend confirmed: mutations frozen."
-          : "Backend confirmed: mutations resumed.",
+          ? "Backend accepted the freeze flag."
+          : "Backend accepted the resume request.",
       );
       setResume(false);
       refresh();
@@ -51,14 +51,14 @@ export function Guard({
     <>
       <div className="metrics-grid two">
         <Metric
-          label="Confirmed autonomy"
+          label="Reported autonomy"
           value={health ? `L${health.autonomy_level}` : "—"}
           detail={
             health ? labels[health.autonomy_level] : "Waiting for backend"
           }
         />
         <Metric
-          label="Mutation gate"
+          label="Reported mutation gate"
           value={
             health
               ? health.kill_switch_engaged
@@ -72,9 +72,14 @@ export function Guard({
       </div>
       {action.error && <Notice danger>{action.error}</Notice>}
       {result && <Notice>{result}</Notice>}
+      <Notice>
+        This backend revision does not apply these controls consistently to
+        pipeline execution. A reported level or freeze flag is not proof of
+        enforcement. Verify the backend controls before running automation.
+      </Notice>
       <Panel
         title="Autonomy envelope"
-        detail="Choose the authority the backend grants to the control loop."
+        detail="Request an operating level from the backend."
       >
         <div className="autonomy-grid">
           {labels.map((label, i) => (
@@ -116,7 +121,7 @@ export function Guard({
           <p>
             {health?.kill_switch_engaged
               ? "The backend reports mutations are frozen."
-              : "Freeze immediately when you need to stop new changes."}
+              : "Request a freeze of new gateway actions."}
           </p>
           <Button
             tone="danger"
@@ -143,12 +148,12 @@ export function Guard({
             ? "Resume infrastructure mutations?"
             : `Set autonomy to L${level}?`
         }
-        description="This changes the backend’s operating authority. Review the scope before applying."
+        description="This requests a backend control change. Review the scope before applying."
       >
         <p className="body-copy">
           {resume
-            ? "New actions will be allowed to enter the backend gateway again."
-            : `${labels[level ?? 0]} mode will apply to future control-loop decisions.`}
+            ? "The backend will be asked to clear its freeze flag."
+            : `Request ${labels[level ?? 0]} mode. This revision needs an enforcement fix before the setting governs all control-loop decisions.`}
         </p>
         {action.error && <Notice danger>{action.error}</Notice>}
         <div className="dialog-actions">

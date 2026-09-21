@@ -1,24 +1,18 @@
-# Proposed configuration, not an already provisioned service.
-# This plan and disk incur charges if applied. Validate resources for your workload.
+# Free hackathon deployment. Local state resets on restart; no paid disk.
 services:
   - type: web
     name: cortex-backend
     runtime: python
+    repo: https://github.com/GaneshNair007/CORTEX-CLOUD-AUTOPILOT-
     branch: main
-    plan: 2c-4g
+    plan: free
     numInstances: 1
     autoDeployTrigger: 'off'
     buildCommand: >-
-      pip install torch --index-url https://download.pytorch.org/whl/cpu &&
-      pip install -r backend/requirements.txt &&
-      HF_HUB_OFFLINE=0 python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2', device='cpu')"
+      pip install -r backend/requirements-free.txt &&
+      python -m backend.scripts.prepare_embeddings
     startCommand: sh backend/startup.sh
     healthCheckPath: /healthz
-    maxShutdownDelaySeconds: 60
-    disk:
-      name: cortex-state
-      mountPath: /var/data/cortex
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.14
@@ -43,20 +37,28 @@ services:
       - key: CORTEX_VIEWER_TOKEN
         sync: false
       - key: CORTEX_PUBLIC_READS
-        value: 'false'
+        value: 'true'
       - key: CORTEX_CORS_ORIGINS
-        sync: false
+        value: https://cortex-cloud-autopilot.vercel.app
       - key: APP_URL
         sync: false
       - key: CORTEX_DATA_DIR
-        value: /var/data/cortex
+        value: /tmp/cortex
       - key: CORTEX_CHROMA_DIR
-        value: /var/data/cortex/chroma
+        value: /tmp/cortex/chroma
       - key: CORTEX_PERSISTENT_STORAGE
-        value: 'true'
-      - key: CORTEX_START_SANDBOX
         value: 'false'
+      - key: CORTEX_START_SANDBOX
+        value: 'true'
       - key: HF_HOME
         value: /opt/render/project/src/.cache/huggingface
       - key: HF_HUB_OFFLINE
         value: '1'
+      - key: CORTEX_EMBEDDING_RUNTIME
+        value: onnx
+      - key: OMP_NUM_THREADS
+        value: '1'
+      - key: OPENBLAS_NUM_THREADS
+        value: '1'
+      - key: TOKENIZERS_PARALLELISM
+        value: 'false'

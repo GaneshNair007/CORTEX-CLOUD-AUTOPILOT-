@@ -95,7 +95,7 @@ install_security(app)
 # CORS wraps auth, so protected failures remain visible to permitted frontends.
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins,
     allow_credentials=False, allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"], expose_headers=["X-Correlation-ID"])
+    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"], expose_headers=["X-Correlation-ID"])
 
 # -----------------------------------------------------------------------------
 # Request & Response Schemas

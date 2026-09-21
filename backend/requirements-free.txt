@@ -1,0 +1,2 @@
+# Chroma ONNX MiniLM; set CORTEX_EMBEDDING_RUNTIME=onnx.
+-r requirements-common.txt

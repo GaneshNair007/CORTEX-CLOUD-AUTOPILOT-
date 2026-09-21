@@ -16,7 +16,7 @@ def rebuild(repository: KnowledgeRepository, semantic: ChromaIndex, *, sources=N
     repository.upsert(load_sources() if sources is None else sources)
     client = semantic.client()
     names = {c.name for c in client.list_collections()}
-    previous = client.get_collection(COLLECTION_NAME, embedding_function=semantic.embedding()) if COLLECTION_NAME in names else None
+    previous = client.get_collection(COLLECTION_NAME, embedding_function=None) if COLLECTION_NAME in names else None
     old_schema = (previous.metadata or {}).get("schema_version", 1) if previous else None
     existing_sql_ids = {d.id for d in repository.documents()}
     if previous:

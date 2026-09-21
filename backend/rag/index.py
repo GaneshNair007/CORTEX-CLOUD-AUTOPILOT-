@@ -35,8 +35,15 @@ class ChromaIndex:
     def embedding(self):
         with self._lock:
             if self._embedding is None:
-                from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
-                self._embedding = SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL_NAME, device="cpu")
+                runtime = os.environ.get("CORTEX_EMBEDDING_RUNTIME", "sentence_transformers")
+                if runtime == "onnx":
+                    from backend.rag.onnx_embedding import LowMemoryMiniLM
+                    self._embedding = LowMemoryMiniLM(preferred_providers=["CPUExecutionProvider"])
+                elif runtime == "sentence_transformers":
+                    from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+                    self._embedding = SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL_NAME, device="cpu")
+                else:
+                    raise ValueError("CORTEX_EMBEDDING_RUNTIME must be onnx or sentence_transformers")
             return self._embedding
 
     def collection(self):

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
   Search,
@@ -10,18 +10,17 @@ import {
   ChevronRight,
   ShieldAlert,
   Flame,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface IncidentsViewProps {
   onSelectIncident: (id: string) => void;
 }
 
-export const IncidentsView: React.FC<IncidentsViewProps> = ({ onSelectIncident }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [severityFilter, setSeverityFilter] = useState('ALL');
-
-  const incidents = [
+// Fallback demo incidents shown when the DB is empty or backend is offline
+const DEMO_INCIDENTS = [
     {
       id: 'INC-1042',
       timestamp: '2026-09-16 14:12:00 UTC',
@@ -94,13 +93,62 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({ onSelectIncident }
     }
   ];
 
+export const IncidentsView: React.FC<IncidentsViewProps> = ({ onSelectIncident }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('ALL');
+  const [liveIncidents, setLiveIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [useLive, setUseLive] = useState(false);
+
+  const fetchIncidents = async () => {
+    try {
+      const data = await api.getIncidents?.() ?? { incidents: [] };
+      if (data.incidents && data.incidents.length > 0) {
+        setLiveIncidents(data.incidents);
+        setUseLive(true);
+      }
+    } catch {
+      // Backend offline — show demo data silently
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Normalise live DB records to the same shape as demo incidents
+  const normalisedLive = liveIncidents.map(i => ({
+    id: i.id,
+    timestamp: i.detected_at ?? '',
+    service: i.service ?? '—',
+    severity: i.severity ?? 'P1',
+    title: i.title ?? '—',
+    rootCause: i.root_cause ?? '—',
+    confidence: 0.9,
+    decision: '—',
+    action: '—',
+    status: i.status === 'RESOLVED' ? 'RESOLVED' : 'ACTIVE',
+    mttr: i.resolved_at ? '—' : null,
+    evidenceDocs: [],
+  }));
+
+  const incidents = useLive ? normalisedLive : DEMO_INCIDENTS;
+
   const filtered = incidents.filter(inc => {
-    const matchesSearch = inc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          inc.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          inc.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      inc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inc.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inc.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSev = severityFilter === 'ALL' || inc.severity === severityFilter;
     return matchesSearch && matchesSev;
   });
+
+  const activeCount = incidents.filter(i => i.status === 'ACTIVE').length;
+  const resolvedCount = incidents.filter(i => i.status === 'RESOLVED').length;
 
   return (
     <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-[#09090b] text-[#fafafa]">

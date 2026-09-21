@@ -10,6 +10,12 @@ import uuid
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import sys
+from datetime import datetime, timezone
+from backend.retrieval.context_builder import ContextBuilder
+from backend.retrieval.engine import get_engine
+from backend.retrieval.memory_writer import IncidentMemoryWriter
+from backend.models.proposals import VerificationResult
+from backend.topology.graph import topology
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -19,7 +25,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 try:
-    from backend.models.proposals import ActionProposal
+    from backend.models.proposals import ActionProposal, ExecutionResult
     from backend.observability.metrics_collector import metrics_collector
     from backend.rag.retrieve import retrieve
     from backend.orchestrator.agent import IncidentAgent
@@ -71,8 +77,7 @@ class ControlPlanePipeline:
         Executes one complete pass of the CORTEX closed-loop control plane.
         """
         start_time = time.time()
-        incident_id = f"INC-{int(time.time() * 1000) % 1000000}"
-        clear_events()
+        incident_id = f"INC-{uuid.uuid4().hex[:16]}"
 
         # =========================================================================
         # 1. OBSERVE: Live Telemetry Collection & Persistence
@@ -102,22 +107,23 @@ class ControlPlanePipeline:
         # 2. UNDERSTAND: RAG Retrieval + Agent Hypothesis & Self-Critique
         # =========================================================================
         emit_event({"type": "diagnosis_started", "payload": {"incident_id": incident_id, "service": service}})
-        try:
-            rag_docs = retrieve(symptom, k=3)
-        except Exception:
-            rag_docs = []
-
-        agent_record = self.agent.handle_incident({
+        incident = {
             "id": incident_id,
             "service": service,
+            "severity": severity,
             "title": f"Degradation on {service}",
-            "description": symptom
-        })
+            "description": symptom,
+            "timestamp": datetime.now(timezone.utc),
+        }
+        context = ContextBuilder().build(incident, obs_telemetry.to_dict(), topology)
+        retrieval_engine = get_engine()
+        evidence = retrieval_engine.retrieve(context)
+        agent_record = self.agent.handle_incident(incident, evidence=evidence)
 
         proposed_action = agent_record["action"]["type"]
         action_params = dict(agent_record["action"]["params"])
 
-        if simulate_dangerous or "database" in symptom.lower():
+        if simulate_dangerous:
             proposed_action = "restart_database"
             action_params = {"database": "postgres"}
 
@@ -168,14 +174,7 @@ class ControlPlanePipeline:
         # =========================================================================
         # 6. AUTHORIZE: CORTEX Guard Governance Policy Evaluation
         # =========================================================================
-        guard_eval = guard.evaluate_action(
-            action_type=proposed_action,
-            params=action_params,
-            incident_id=incident_id,
-            actor="cortex-autopilot"
-        )
-        guard_decision = guard_eval.get("decision", "BLOCK")
-
+        # The gateway is the sole authorization owner.
         # =========================================================================
         # 7. ACT: Structured Proposal Routed STRICTLY via CortexExecutionGateway
         # =========================================================================
@@ -184,16 +183,27 @@ class ControlPlanePipeline:
             action_type=proposed_action,
             target=target_resource,
             params=action_params,
-            risk_score=guard_eval.get("risk_score", 50),
+            risk_score=blast_info.get("score", 50),
             reason=agent_record.get("hypothesis", symptom),
             generated_by="cortex-control-plane",
+            confidence=agent_record.get("confidence", 0),
+            evidence_ids=[item.id for item in evidence.evidence],
             dry_run=False
         )
 
-        exec_result = execution_gateway.evaluate_and_execute(
-            proposal=proposal,
-            approval_id=approval_id
-        )
+        from backend.retrieval.lifecycle import prepare_learning
+        prepare_learning(proposal, context, agent_record.get("hypothesis"), {"blast_radius": blast_info, "twin": twin_sim})
+        if agent_record.get("valid", True):
+            exec_result = execution_gateway.evaluate_and_execute(proposal=proposal, approval_id=approval_id)
+        else:
+            exec_result = ExecutionResult(operation_id=f"invalid_{uuid.uuid4().hex}", proposal_id=proposal.proposal_id,
+                action_type=proposal.action_type, target=proposal.target, params=proposal.params, status="BLOCKED",
+                output={"reason": agent_record.get("validation_error"), "outcome": "UNKNOWN"}, idempotency_key="invalid-output")
+        guard_eval = exec_result.output.get("guard_decision", {
+            "decision": "BLOCK" if exec_result.status == "BLOCKED" else "ALLOW",
+            "risk_score": proposal.risk_score,
+            "reasons": [exec_result.output.get("reason", exec_result.output.get("error", exec_result.status))]})
+        guard_decision = guard_eval["decision"]
 
         action_executed = exec_result.status in ("SUCCESS", "ROLLED_BACK")
         action_blocked = exec_result.status == "BLOCKED"
@@ -215,7 +225,7 @@ class ControlPlanePipeline:
         # 8. VERIFY: Closed-Loop Verification (Executed inline by Gateway)
         # =========================================================================
         verification_data = None
-        if action_executed:
+        if exec_result.output.get("verification"):
             post_output = exec_result.output
             verification_data = {
                 "outcome": post_output.get("outcome", "UNKNOWN"),
@@ -239,8 +249,12 @@ class ControlPlanePipeline:
         # =========================================================================
         # 9. LEARN: Memory Persistence & Ledger Auditing
         # =========================================================================
-        if exec_result.status == "SUCCESS":
+        recovered = bool(verification_data and verification_data["outcome"] == "RECOVERED"
+                         and exec_result.output["verification"].get("slo_satisfied"))
+        memory_result = None
+        if recovered:
             db_manager.resolve_incident(incident_id)
+        memory_result = exec_result.output.get("memory")
 
         ledger.record_event(
             event_type="control_loop_pass_completed",
@@ -267,10 +281,12 @@ class ControlPlanePipeline:
                     "freshness": obs_telemetry.freshness
                 },
                 "understand": {
+                    "ai": agent_record.get("ai"),
                     "hypothesis": agent_record.get("hypothesis"),
                     "critique": agent_record.get("critique"),
                     "confidence": agent_record.get("confidence"),
-                    "retrieved_context_count": len(rag_docs)
+                    "retrieved_context_count": len(evidence.evidence),
+                    "evidence_bundle": evidence.public_response(),
                 },
                 "predict": {
                     "horizons": forecast_result.get("horizons"),
@@ -297,7 +313,8 @@ class ControlPlanePipeline:
                 },
                 "verify": verification_data,
                 "learn": {
-                    "incident_resolved": exec_result.status == "SUCCESS",
+                    "incident_resolved": recovered,
+                    "memory": memory_result,
                     "ledger_verified": ledger.verify_integrity()["valid"]
                 }
             },

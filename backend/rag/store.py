@@ -1,7 +1,7 @@
-"""Retrieval + memory store — MINIMAL STUB honoring interfaces.py.
+"""Legacy JSONL compatibility/export store, not the production retrieval path.
 
-Owner: partner. Keyword-overlap scoring stands in for the real embedding
-retrieval; the contract (retrieve/remember signatures) is the only stable part.
+Normal retrieval uses backend.retrieval with SQL/FTS and Chroma. Verified memory
+is written through IncidentMemoryWriter; these helpers only serve old callers.
 """
 
 import json

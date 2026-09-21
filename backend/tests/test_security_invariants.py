@@ -63,6 +63,7 @@ class MockTestProvider(CloudProvider):
 def reset_safety_state():
     anti_thrashing_manager._last_mutations.clear()
     resource_lock_manager._active_holders.clear()
+    metrics_collector.collect_all()  # Establish fresh observations before testing unrelated invariants.
     yield
     anti_thrashing_manager._last_mutations.clear()
     resource_lock_manager._active_holders.clear()

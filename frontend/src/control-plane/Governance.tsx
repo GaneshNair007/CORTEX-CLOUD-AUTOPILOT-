@@ -370,7 +370,7 @@ export function Approvals({
                   selected.approved,
                   approver.trim(),
                 );
-                if (r.status !== "success")
+                if (!["success", "approved", "rejected"].includes(r.status))
                   throw new Error(r.message || `Approval was ${r.status}.`);
                 setResult(r as RecordData);
                 setSelected(undefined);

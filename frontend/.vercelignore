@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+artifacts/
+test-results/
+playwright-report/
+node_modules/
+dist/
+dist-static/
+tests/
+*.log

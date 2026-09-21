@@ -19,6 +19,8 @@ def test_chaos_safety_violation_staging():
 
 
 def test_chaos_experiment_lifecycle_sandbox():
+    from backend.observability.metrics_collector import metrics_collector
+    metrics_collector.collect_all()
     res = chaos_engine.inject_fault("payment-service", "latency", duration_sec=5, intensity=50.0, environment="sandbox")
     assert res["status"] == "ACTIVE"
     assert "experiment_id" in res

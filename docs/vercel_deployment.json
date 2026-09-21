@@ -1,0 +1,23 @@
+{
+  "url": "https://cortex-cloud-autopilot.vercel.app",
+  "status": 200,
+  "title": [
+    "CORTEX \u00b7 Cloud Autopilot"
+  ],
+  "assets": [
+    {
+      "url": "https://cortex-cloud-autopilot.vercel.app/assets/index-Dty0rjOd.js",
+      "status": 200,
+      "bytes": 294743
+    },
+    {
+      "url": "https://cortex-cloud-autopilot.vercel.app/assets/index-RJ0bGptI.css",
+      "status": 200,
+      "bytes": 119740
+    }
+  ],
+  "public": true,
+  "backend_hosted": false,
+  "nvidia_live_test": "NOT_RUN",
+  "deployment_id": "dpl_FKnfQECSuuxY7JCJkZj1oaL7ssCK"
+}

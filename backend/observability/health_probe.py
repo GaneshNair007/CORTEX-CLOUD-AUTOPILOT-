@@ -17,23 +17,28 @@ from sandbox.manager import sandbox_manager
 class HealthProbe:
     """Secondary health probe querying live HTTP endpoints."""
 
+    @staticmethod
+    def normalize_target(service: str) -> str:
+        """Map public aliases to the actual registered local service."""
+        return {"payment-api": "payment-service", "payments-api": "payment-service",
+                "postgres-primary": "postgres", "redis-cache": "redis"}.get(service, service)
+
     def check_service(self, service: str) -> Dict[str, Any]:
         """Queries /health and /ready on the target service."""
         # Normalize naming
-        norm = "payment-service" if service in ("payment-api", "payments-api") else service
-        norm = "postgres" if norm == "postgres-primary" else norm
-        norm = "redis" if norm == "redis-cache" else norm
+        norm = self.normalize_target(service)
 
         health = sandbox_manager.get_health(norm)
         is_up = health.get("status") == "UP"
 
         return {
             "service": service,
-            "status": "UP" if is_up else "DOWN",
-            "ready": is_up,
-            "uptime_seconds": health.get("uptime_seconds", 0.0),
-            "replicas": health.get("replicas", 1),
+            "status": health.get("status") if health.get("status") in ("UP", "DOWN") else "UNKNOWN",
+            "ready": health.get("ready") if is_up else False,
+            "uptime_seconds": health.get("uptime_seconds"),
+            "replicas": health.get("replicas"),
             "source": "secondary_http_probe",
+            "simulated": True,
         }
 
     def check_all(self) -> Dict[str, Dict[str, Any]]:

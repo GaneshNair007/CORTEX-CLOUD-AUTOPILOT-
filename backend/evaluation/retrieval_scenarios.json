@@ -1,0 +1,22 @@
+[
+  {"id":"RET-01","service":"auth-service","query":"New auth pod repeatedly exits with CrashLoopBackOff; required environment secret is absent.","expected":["INC-2026-001","RB-001_k8s_pod_crashloop"]},
+  {"id":"RET-02","service":"search-indexer","query":"Batch indexing consumes the pod memory limit. Kubernetes reports OOMKilled.","expected":["INC-2026-002","RB-001_k8s_pod_crashloop"]},
+  {"id":"RET-03","service":"payment-api","query":"HTTP 503 with SQLSTATE 53300, too many clients already, PostgreSQL PgBouncer pool saturated.","expected":["INC-2026-003","RB-002_postgres_connection_pool"]},
+  {"id":"RET-04","service":"analytics-api","query":"Reports read stale rows from the PostgreSQL replica. Replication is minutes behind the primary.","expected":["INC-2026-004","RB-003_postgres_replication_lag"]},
+  {"id":"RET-05","service":"checkout-gateway","query":"A traffic surge causes HTTP 504 gateway timeouts and saturated upstream connections.","expected":["INC-2026-005","RB-004_api_gateway_504_timeouts"]},
+  {"id":"RET-06","service":"session-store","query":"Redis maxmemory reached, OOM command rejected, cache eviction policy causes session misses.","expected":["INC-2026-006","RB-005_redis_memory_eviction"]},
+  {"id":"RET-07","service":"recommendation-cache","query":"Redis single thread blocked by KEYS wildcard commands, slowlog shows long scans.","expected":["INC-2026-007","RB-006_redis_latency_single_thread"]},
+  {"id":"RET-08","service":"payment-processor","query":"Bank API no longer reachable after a VPC peering route was removed; network partition.","expected":["INC-2026-008","RB-007_vpc_peering_network_partition"]},
+  {"id":"RET-09","service":"payment-api","query":"Recent bad deployment increases CPU and HTTP 500 errors; canary analysis failed and rollback is needed.","expected":["INC-2026-009","RB-008_failed_canary_deployment"]},
+  {"id":"RET-10","service":"identity-provider","query":"Vault token expired and authentication requests fail; JWT renewal no longer succeeds.","expected":["INC-2026-010","RB-009_vault_jwt_auth_failure"]},
+  {"id":"RET-11","service":"order-db","query":"Database pod stays Pending because its PVC cannot allocate a persistent volume.","expected":["INC-2026-011","RB-010_pvc_storage_pending_disk_full"]},
+  {"id":"RET-12","service":"log-aggregator","query":"Node disk full at 100 percent; unrotated container stdout logs exhausted filesystem storage.","expected":["INC-2026-012","RB-010_pvc_storage_pending_disk_full"]},
+  {"id":"RET-13","service":"inventory-api","query":"CoreDNS upstream resolver times out and internal service names return NXDOMAIN.","expected":["INC-2026-013","RB-011_coredns_name_resolution"]},
+  {"id":"RET-14","service":"prometheus","query":"Monitoring will not start after a crash: TSDB write-ahead log WAL corruption.","expected":["INC-2026-014","RB-012_prometheus_tsdb_monitoring"]},
+  {"id":"RET-15","service":"telemetry-pipeline","query":"Fluent Bit and Vector buffers overflow under heavy log emission and backpressure.","expected":["INC-2026-015","RB-013_vector_fluentbit_logging"]},
+  {"id":"RET-16","service":"billing-service","query":"PostgreSQL transactions deadlock in a cascade and halt the billing processing queue.","expected":["INC-2026-016","RB-014_postgres_deadlock_cascades"]},
+  {"id":"RET-17","service":"public-api-gateway","query":"Envoy rate limiting rejects legitimate requests with HTTP 429 Too Many Requests.","expected":["INC-2026-017","RB-015_envoy_rate_limit_ebs_iops_iam"]},
+  {"id":"RET-18","service":"elasticsearch","query":"Elasticsearch indexing is slow because EBS gp2 burst credits ran out and IOPS is throttled.","expected":["INC-2026-018","RB-015_envoy_rate_limit_ebs_iops_iam"]},
+  {"id":"RET-19","service":"s3-exporter","query":"AWS STS AssumeRoleWithWebIdentity AccessDenied prevents exporting objects to S3.","expected":["INC-2026-019","RB-015_envoy_rate_limit_ebs_iops_iam"]},
+  {"id":"RET-20","service":"customer-portal","query":"ExternalDNS DNS TTL cache still resolves the customer domain to an obsolete IP address.","expected":["INC-2026-020","RB-011_coredns_name_resolution"]}
+]

@@ -12,23 +12,33 @@ class ServiceTelemetry(BaseModel):
     """Point-in-time telemetry snapshot for a microservice."""
     service: str
     timestamp: float = Field(default_factory=time.time)
-    rps: float = 0.0
-    error_rate_pct: float = 0.0
-    p50_latency_ms: float = 12.0
-    p95_latency_ms: float = 45.0
-    p99_latency_ms: float = 85.0
-    cpu_percent: float = 15.0
-    memory_percent: float = 20.0
-    active_replicas: int = 1
-    queue_depth: int = 0
-    source: Literal["prometheus", "http_probe", "fallback"] = "http_probe"
+    # Optional observations: a failed scrape is not evidence of a healthy zero.
+    # Numeric defaults retain the legacy constructor contract; collectors explicitly
+    # pass None for every unobserved value.
+    rps: Optional[float] = 0.0
+    error_rate_pct: Optional[float] = 0.0
+    p50_latency_ms: Optional[float] = 12.0
+    p95_latency_ms: Optional[float] = 45.0
+    p99_latency_ms: Optional[float] = 85.0
+    cpu_percent: Optional[float] = 15.0
+    memory_percent: Optional[float] = 20.0
+    active_replicas: Optional[int] = 1
+    queue_depth: Optional[int] = 0
+    source: Literal["prometheus", "sandbox_model", "http_probe", "fallback"] = "http_probe"
+    simulated: bool = False
+    metrics_available: bool = False
+    service_status: Literal["UP", "DOWN", "UNKNOWN"] = "UNKNOWN"
+    warnings: list[str] = Field(default_factory=list)
     freshness: Literal["FRESH", "DEGRADED", "STALE"] = "FRESH"
     age_seconds: float = 0.0
 
     def compute_freshness(self) -> None:
         """Evaluates telemetry age against freshness thresholds."""
-        self.age_seconds = round(time.time() - self.timestamp, 2)
-        if self.age_seconds < 15.0:
+        age = time.time() - self.timestamp
+        self.age_seconds = round(max(0.0, age), 2)
+        if age < -5.0:
+            self.freshness = "STALE"
+        elif self.age_seconds < 15.0:
             self.freshness = "FRESH"
         elif self.age_seconds <= 60.0:
             self.freshness = "DEGRADED"
@@ -44,9 +54,11 @@ class ServiceTelemetry(BaseModel):
 
 class ObservabilityStatus(BaseModel):
     """System-wide observability pipeline state and privilege ceiling."""
-    overall_status: Literal["OPTIMAL", "OBSERVABILITY_DEGRADED", "OFFLINE"] = "OPTIMAL"
-    primary_available: bool = True
-    secondary_available: bool = True
-    active_services: int = 8
-    effective_autonomy_ceiling: int = 3  # Level 0 (Read-only), 1 (Recommend), 2 (Guarded), 3 (Autonomous)
-    reason: str = "All observability pipelines operational."
+    overall_status: Literal["OPTIMAL", "OBSERVABILITY_DEGRADED", "OFFLINE"] = "OFFLINE"
+    primary_available: bool = False
+    secondary_available: bool = False
+    active_services: int = 0
+    effective_autonomy_ceiling: int = 0
+    reason: str = "No fresh observability observations available."
+    source: str = "unavailable"
+    simulated: bool = False

@@ -1,2 +1,2 @@
-from topology.graph import topology, TopologyGraph
-from topology.blast_radius import calculate_blast_radius
+from backend.topology.graph import topology, TopologyGraph
+from backend.topology.blast_radius import calculate_blast_radius

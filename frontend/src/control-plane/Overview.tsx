@@ -4,6 +4,7 @@ import { client } from "./client";
 import { useResource } from "./hooks";
 import type { Health, Service } from "./contracts";
 import { Graph, ServiceDialog } from "./Topology";
+import { AiStatus } from "./AiStatus";
 import {
   Badge,
   Empty,
@@ -82,6 +83,7 @@ export default function Overview({ health }: { health?: Health }) {
           }
         />
       </div>
+      <AiStatus />
       <div className="overview-main">
         <Panel
           title="Infrastructure map"

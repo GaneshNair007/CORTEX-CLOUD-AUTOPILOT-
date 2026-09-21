@@ -156,6 +156,11 @@ class ToolRegistry:
             requires_approval=False,
             param_schema={"service": str},
         ))
+        for name in ("chaos_inject", "chaos_clear"):
+            self.register(ToolDefinition(name=name, description="Bounded local sandbox experiment",
+                mutating=True, risk_class="MEDIUM", reversible=False,
+                allowed_environments=["sandbox"], required_capability="chaos", cooldown_seconds=0,
+                param_schema={"service": str}))
 
     def register(self, tool: ToolDefinition) -> None:
         self._tools[tool.name] = tool
@@ -176,14 +181,15 @@ class ToolRegistry:
             return False, f"Unknown tool: '{name}' is not registered in ToolRegistry. Execution BLOCKED."
 
         for param_name, param_type in tool.param_schema.items():
-            if param_name in params:
-                val = params[param_name]
-                if not isinstance(val, param_type):
-                    try:
-                        # Attempt coercion for numbers e.g. "9" -> 9
-                        params[param_name] = param_type(val)
-                    except (ValueError, TypeError):
-                        return False, f"Parameter '{param_name}' must be of type {param_type.__name__}, got {type(val).__name__}."
+            if param_name not in params:
+                return False, f"Missing required parameter '{param_name}'."
+            val = params[param_name]
+            if type(val) is not param_type:
+                return False, f"Parameter '{param_name}' must be of type {param_type.__name__}."
+        if "replicas" in params and not 1 <= params["replicas"] <= 20:
+            return False, "Replica count must be between 1 and 20."
+        if not params.get("service", "").strip():
+            return False, "A target service is required."
         return True, None
 
 

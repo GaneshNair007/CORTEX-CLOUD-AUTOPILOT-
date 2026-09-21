@@ -20,15 +20,44 @@ except ImportError:
 
 
 class CortexGuard:
-    def __init__(self):
+    def __init__(self, persistent: bool = False):
         # Autonomy Level:
         # 0 = Observe (No actions allowed)
         # 1 = Recommend (AI recommends, human executes)
         # 2 = Guarded (Low-risk auto-executes, high-risk requires approval)
         # 3 = Autonomous (Wider action envelope, bounded blast radius)
-        self.autonomy_level = 2
-        self.kill_switch_engaged = False
+        self.persistent = persistent
+        self._autonomy_level = 2
+        self._kill_switch_engaged = False
         self.pending_approvals: Dict[str, Dict[str, Any]] = {}
+
+    @property
+    def autonomy_level(self):
+        if self.persistent:
+            from backend.persistence.authorization import get_governance
+            return get_governance()["autonomy_level"]
+        return self._autonomy_level
+
+    @autonomy_level.setter
+    def autonomy_level(self, value):
+        if self.persistent:
+            from backend.persistence.authorization import set_governance
+            set_governance("autonomy_level", value)
+        self._autonomy_level = value
+
+    @property
+    def kill_switch_engaged(self):
+        if self.persistent:
+            from backend.persistence.authorization import get_governance
+            return get_governance()["kill_switch_engaged"]
+        return self._kill_switch_engaged
+
+    @kill_switch_engaged.setter
+    def kill_switch_engaged(self, value):
+        if self.persistent:
+            from backend.persistence.authorization import set_governance
+            set_governance("kill_switch_engaged", value)
+        self._kill_switch_engaged = value
 
     def set_autonomy_level(self, level: int) -> None:
         """Updates the operational autonomy level."""
@@ -161,6 +190,9 @@ class CortexGuard:
             final_decision = "REQUIRE_APPROVAL"
             reasons.append("Autonomy Level 1 (RECOMMEND): All infrastructure changes require human confirmation.")
 
+        elif policy_decision == "REQUIRE_APPROVAL":
+            final_decision = "REQUIRE_APPROVAL"
+
         elif self.autonomy_level == 3:
             # Level 3 Full Autonomy: Automatically executes safe & bounded operational remediations
             # Only catastrophic blast radius (>=90) requires human intervention
@@ -180,20 +212,8 @@ class CortexGuard:
         else:
             final_decision = "ALLOW"
 
-        # If approval required, record in pending queue
+        # Gateway owns the durable approval lifecycle; evaluation is side-effect free.
         approval_id = None
-        if final_decision == "REQUIRE_APPROVAL":
-            approval_id = f"APP-{str(uuid.uuid4())[:8]}"
-            self.pending_approvals[approval_id] = {
-                "approval_id": approval_id,
-                "incident_id": incident_id,
-                "action_type": action_type,
-                "params": params,
-                "risk_score": blast["score"],
-                "created_at": time.time(),
-                "ttl_seconds": 120,
-                "status": "pending"
-            }
 
         # Step 4: Record Decision in Tamper-Evident Ledger
         ledger.record_event(
@@ -220,35 +240,12 @@ class CortexGuard:
             "ttl_seconds": 120
         }
 
-    def resolve_approval(self, approval_id: str, approved: bool, approver: str = "sre-lead") -> Dict[str, Any]:
-        """Resolves a pending human approval decision."""
-        if approval_id not in self.pending_approvals:
-            return {"status": "error", "message": f"Approval {approval_id} not found or expired"}
-
-        appr = self.pending_approvals[approval_id]
-        if time.time() - appr["created_at"] > appr["ttl_seconds"]:
-            del self.pending_approvals[approval_id]
-            return {"status": "expired", "message": "Approval expired (TTL 120s passed). Re-evaluation required."}
-
-        status = "approved" if approved else "rejected"
-        appr["status"] = status
-        appr["approver"] = approver
-
-        ledger.record_event(
-            event_type=f"approval_{status}",
-            actor=approver,
-            payload={"approval_id": approval_id, "action_type": appr["action_type"]},
-            correlation_id=appr["incident_id"]
-        )
-
-        return {
-            "status": "success",
-            "approval_id": approval_id,
-            "outcome": status,
-            "action_type": appr["action_type"],
-            "params": appr["params"]
-        }
+    def resolve_approval(self, approval_id: str, approved: bool, approver: str = "operator") -> Dict[str, Any]:
+        """Compatibility facade for the authoritative gateway approval store."""
+        from backend.cortex.gateway import execution_gateway
+        record = (execution_gateway.approve_action if approved else execution_gateway.reject_action)(approval_id, approver)
+        return {"status": record.status.lower() if record else "not_found", "approval_id": approval_id}
 
 
-# Global singleton cortex guard instance
-guard = CortexGuard()
+# All production entry points share this durable governance state.
+guard = CortexGuard(persistent=True)

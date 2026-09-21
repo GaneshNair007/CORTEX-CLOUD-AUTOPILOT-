@@ -7,13 +7,15 @@ Ensures history cannot be altered or truncated without breaking verification.
 import hashlib
 import json
 import time
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 import threading
+from backend.llm.sanitizer import sanitize_payload
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-LEDGER_FILE_PATH = PROJECT_ROOT / "tools" / "evidence_ledger.jsonl"
+LEDGER_FILE_PATH = Path(os.environ["CORTEX_DATA_DIR"]) / "evidence_ledger.jsonl" if os.environ.get("CORTEX_DATA_DIR") else PROJECT_ROOT / "tools" / "evidence_ledger.jsonl"
 
 
 class EvidenceLedger:
@@ -48,7 +50,7 @@ class EvidenceLedger:
                 "event_type": event_type,
                 "actor": actor,
                 "correlation_id": correlation_id or "CORR-000",
-                "payload": payload,
+                "payload": sanitize_payload(payload),
                 "previous_hash": self.last_hash
             }
 

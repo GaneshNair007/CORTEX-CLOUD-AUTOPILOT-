@@ -148,11 +148,12 @@ class PostActionVerifier:
         correlation_id: str
     ) -> Dict[str, Any]:
         """Dispatches an emergency rollback to the real cloud provider."""
-        provider = get_active_provider()
-        try:
-            prov_res = provider.rollback_service(target_service)
-        except Exception as e:
-            prov_res = {"status": "FAILED", "error": str(e)}
+        from backend.cortex.gateway import execution_gateway
+        from backend.models.proposals import ActionProposal
+        proposal = ActionProposal(incident_id=correlation_id, action_type="rollback_deployment",
+            target=target_service, params={"service": target_service}, reason=reason, generated_by="cortex-verifier")
+        execution = execution_gateway.evaluate_and_execute(proposal)
+        prov_res = execution.model_dump(mode="json")
 
         rollback_record = {
             "action": "automated_rollback",

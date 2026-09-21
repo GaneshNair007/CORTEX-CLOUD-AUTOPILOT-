@@ -10,13 +10,50 @@ import type {
   Optimization,
   Blast,
   Twin,
-  Evidence,
+  EvidenceResponse,
+  RetrievalContext,
+  EvaluationReport,
+  LlmStatus,
   Ledger,
   ActionResult,
   Pipeline,
   Experiment,
   RecordData,
 } from "./contracts";
+
+// Console access only. Provider credentials never belong in the browser.
+let operatorAccess:
+  { token: string; base: string; expiresAt: number } | undefined;
+const ACCESS_TTL_MS = 30 * 60 * 1000;
+export function clearOperatorToken() {
+  operatorAccess = undefined;
+}
+export function setOperatorToken(value: string) {
+  const token = value.trim();
+  if (!token) return clearOperatorToken();
+  if (!/^[\x21-\x7E]{8,4096}$/.test(token))
+    throw new Error(
+      "Use the server-issued console access token without spaces.",
+    );
+  if (/^(nvapi-|sk-|AIza|ci-)/.test(token))
+    throw new Error(
+      "AI provider API keys must stay on the backend. Enter a console access token here.",
+    );
+  operatorAccess = {
+    token,
+    base: getBase(),
+    expiresAt: Date.now() + ACCESS_TTL_MS,
+  };
+}
+export function hasOperatorToken(): boolean {
+  if (
+    operatorAccess &&
+    (operatorAccess.base !== getBase() ||
+      operatorAccess.expiresAt <= Date.now())
+  )
+    clearOperatorToken();
+  return Boolean(operatorAccess);
+}
 
 export function normalizeBase(value: string): string {
   const clean = value
@@ -51,7 +88,9 @@ export function getBase() {
   );
 }
 export function saveBase(value: string) {
-  sessionStorage.setItem("cortex.api.v1", normalizeBase(value));
+  const base = normalizeBase(value);
+  if (base !== getBase()) clearOperatorToken();
+  sessionStorage.setItem("cortex.api.v1", base);
 }
 export async function request<T>(
   path: string,
@@ -65,10 +104,13 @@ export async function request<T>(
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(abort, timeout);
   try {
+    const access = hasOperatorToken() ? operatorAccess : undefined;
     const response = await fetch(`${getBase()}/api${path}`, {
       method: body === undefined ? "GET" : "POST",
       headers: {
         Accept: "application/json",
+        "X-Correlation-ID": crypto.randomUUID(),
+        ...(access ? { Authorization: `Bearer ${access.token}` } : {}),
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -84,6 +126,16 @@ export async function request<T>(
       );
     }
     if (!response.ok) {
+      if (response.status === 401) {
+        if (operatorAccess === access) clearOperatorToken();
+        throw new Error(
+          "Console access is required or has expired. Enter your server-issued access token in Connection settings.",
+        );
+      }
+      if (response.status === 403)
+        throw new Error(
+          "Your console access does not allow this operation. An operator or administrator role is required.",
+        );
       const error = data as {
         detail?: unknown;
         message?: string;
@@ -113,6 +165,8 @@ export async function request<T>(
 }
 export const client = {
   health: (s?: AbortSignal) => request<Health>("/health", undefined, s),
+  llmStatus: (s?: AbortSignal) =>
+    request<LlmStatus>("/v1/llm/status", undefined, s),
   topology: (s?: AbortSignal) => request<Topology>("/topology", undefined, s),
   incidents: (s?: AbortSignal) =>
     request<{ incidents: Incident[] }>("/incidents", undefined, s),
@@ -150,8 +204,13 @@ export const client = {
     request<Twin>("/twin/simulate", { action_type: action, params }),
   blast: (action: string, params: RecordData) =>
     request<Blast>("/topology/blast-radius", { action_type: action, params }),
-  retrieve: (query: string, k: number) =>
-    request<{ results: Evidence[] }>("/rag/retrieve", { query, k }),
+  retrieve: (query: string, k: number, context: RetrievalContext = {}) =>
+    request<EvidenceResponse>(
+      "/v1/evidence/retrieve",
+      { query, context, options: { top_k: k } },
+      undefined,
+      90000,
+    ),
   action: (action: string, params: RecordData) =>
     request<ActionResult>(
       "/tools/action",
@@ -202,5 +261,10 @@ export const client = {
       180000,
     ),
   benchmark: () =>
-    request<RecordData>("/evaluation/benchmark", undefined, undefined, 180000),
+    request<EvaluationReport>(
+      "/evaluation/benchmark",
+      undefined,
+      undefined,
+      180000,
+    ),
 };

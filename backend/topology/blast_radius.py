@@ -4,7 +4,7 @@ Computes topological blast radius scores (0–100) and affected critical paths f
 """
 
 from typing import Dict, Any, List
-from topology.graph import topology
+from backend.topology.graph import topology
 
 
 def calculate_blast_radius(action_type: str, params: Dict[str, Any]) -> Dict[str, Any]:

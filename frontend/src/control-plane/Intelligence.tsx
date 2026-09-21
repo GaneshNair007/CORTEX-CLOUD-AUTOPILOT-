@@ -1,7 +1,12 @@
 import { useCallback, useState } from "react";
 import { client } from "./client";
 import { useAction, useResource } from "./hooks";
-import type { Evidence, Forecast, Optimization, RecordData } from "./contracts";
+import type {
+  EvidenceResponse,
+  EvaluationReport,
+  Forecast,
+  Optimization,
+} from "./contracts";
 import {
   Badge,
   Button,
@@ -402,14 +407,18 @@ export function Optimizer({
 export function Memory() {
   const [query, setQuery] = useState("");
   const [k, setK] = useState(5);
-  const [results, setResults] = useState<Evidence[]>();
+  const [response, setResponse] = useState<EvidenceResponse>();
+  const [service, setService] = useState("");
+  const [environment, setEnvironment] = useState("");
+  const [technology, setTechnology] = useState("");
+  const results = response?.results;
   const [searched, setSearched] = useState("");
   const action = useAction();
   return (
     <>
       <Panel
         title="Operational memory"
-        detail="Retrieve relevant incidents and runbooks from the backend’s semantic index."
+        detail="Search incident evidence by failure signals, operational context, and verified outcomes."
       >
         <form
           className="toolbar"
@@ -417,8 +426,22 @@ export function Memory() {
             e.preventDefault();
             if (!query.trim()) return;
             void action.run(async () => {
-              const response = await client.retrieve(query.trim(), k);
-              setResults(response.results);
+              setResponse(
+                await client.retrieve(query.trim(), k, {
+                  ...(service.trim() ? { service: service.trim() } : {}),
+                  ...(environment.trim()
+                    ? { environment: environment.trim() }
+                    : {}),
+                  ...(technology.trim()
+                    ? {
+                        technologies: technology
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean),
+                      }
+                    : {}),
+                }),
+              );
               setSearched(query.trim());
             });
           }}
@@ -427,6 +450,7 @@ export function Memory() {
             aria-label="Search operational memory"
             required
             minLength={3}
+            maxLength={12000}
             placeholder="Describe an incident, symptom, or failure…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -446,7 +470,63 @@ export function Memory() {
             {action.pending ? "Searching…" : "Search memory"}
           </Button>
         </form>
+        <details className="json-details">
+          <summary>Optional incident context</summary>
+          <div className="form-grid">
+            <label>
+              Service
+              <input
+                maxLength={200}
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+                placeholder="payment-api"
+              />
+            </label>
+            <label>
+              Environment
+              <input
+                maxLength={200}
+                value={environment}
+                onChange={(e) => setEnvironment(e.target.value)}
+                placeholder="production"
+              />
+            </label>
+            <label>
+              Technologies
+              <input
+                maxLength={1000}
+                value={technology}
+                onChange={(e) => setTechnology(e.target.value)}
+                placeholder="postgresql, pgbouncer"
+              />
+            </label>
+          </div>
+          <p className="body-copy">
+            Enter known details. Related incidents from other services can still
+            be relevant.
+          </p>
+        </details>
         {action.error && <Notice danger>{action.error}</Notice>}
+        {response?.warnings?.map((warning, index) => (
+          <Notice key={`${index}-${warning}`}>{warning}</Notice>
+        ))}
+        {response && (
+          <div className="row-between">
+            <Badge
+              tone={
+                response.status === "DEGRADED_RETRIEVAL" ? "warning" : "info"
+              }
+            >
+              {response.status === "DEGRADED_RETRIEVAL"
+                ? "Degraded retrieval"
+                : "Evidence retrieved"}
+            </Badge>
+            <span className="mono">
+              {response.retrieval_stage?.replaceAll("_", " ")} ·{" "}
+              {num(response.retrieval_time_ms)} ms
+            </span>
+          </div>
+        )}
         {results && (
           <p className="body-copy">
             {results.length} results for “{searched}”
@@ -458,10 +538,50 @@ export function Memory() {
               <article className="evidence-card" key={`${r.id}-${i}`}>
                 <div className="row-between">
                   <Badge tone="info">{r.document_type}</Badge>
-                  <span className="mono">Score {num(r.score, 3)}</span>
+                  <span className="mono">
+                    Score {num(r.final_score ?? r.score, 3)}
+                  </span>
                 </div>
                 <h3>{r.title}</h3>
                 <p className="mono muted">{r.id}</p>
+                {r.simulated && <Badge tone="warning">Modeled sandbox evidence</Badge>}
+                {r.environment && <p className="muted">Environment: {r.environment}</p>}
+                {r.verification_outcome && (
+                  <Badge
+                    tone={
+                      /WORSE|ROLLED_BACK|NO_CHANGE|FAILED/.test(
+                        r.verification_outcome,
+                      )
+                        ? "warning"
+                        : /^(VERIFIED_)?RECOVERED$/.test(r.verification_outcome)
+                          ? "success"
+                          : "neutral"
+                    }
+                  >
+                    {r.verification_outcome.replaceAll("_", " ")}
+                  </Badge>
+                )}
+                {/WORSE|ROLLED_BACK|NO_CHANGE|FAILED/.test(
+                  r.verification_outcome || "",
+                ) && (
+                  <Notice>
+                    Negative evidence:{" "}
+                    {r.historical_action?.replaceAll("_", " ") ||
+                      "the historical action"}{" "}
+                    did not establish recovery. This record is not a
+                    recommendation to repeat it.
+                  </Notice>
+                )}
+                {!!r.why_retrieved?.length && (
+                  <div>
+                    <h4>Why this matched</h4>
+                    <ul className="body-copy">
+                      {r.why_retrieved.map((reason, index) => (
+                        <li key={`${index}-${reason}`}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {(r.content || r.text) && (
                   <p className="body-copy preserve">{r.content || r.text}</p>
                 )}
@@ -481,18 +601,43 @@ export function Memory() {
           />
         )}
       </Panel>
+      {response?.stages_attempted && (
+        <Panel
+          title="Search scope"
+          detail="Search stages and filters actually reported by the retrieval engine."
+        >
+          <p className="body-copy">
+            {response.stages_attempted
+              .map((stage) => stage.replaceAll("_", " "))
+              .join(" → ")}
+          </p>
+          <p className="body-copy">
+            Candidates considered: {num(response.candidate_count)} · Semantic
+            index: {response.semantic_available ? "available" : "unavailable"}
+          </p>
+          {!!response.relaxed_filters?.length && (
+            <p className="body-copy">
+              Scope expanded: {response.relaxed_filters.join(", ")}
+            </p>
+          )}
+          <JsonDetails
+            data={response.filters_applied}
+            title="Applied filters"
+          />
+        </Panel>
+      )}
     </>
   );
 }
 export function Evaluation() {
   const action = useAction();
-  const [result, setResult] = useState<RecordData>();
+  const [result, setResult] = useState<EvaluationReport>();
   return (
     <>
       <Notice>
-        Only retrieval scores are measured by this endpoint. Safety counts and
-        baseline comparisons in the current backend are fixed examples, so they
-        are not presented as experimental results.
+        This benchmark measures retrieval against labeled scenarios. Safety
+        authorization is tested separately. A small corpus does not establish
+        performance at production scale.
       </Notice>
       <Panel
         title="Evaluation workbench"
@@ -511,15 +656,52 @@ export function Evaluation() {
         {action.error && <Notice danger>{action.error}</Notice>}
         {result ? (
           <>
-            <Badge tone="info">Backend benchmark response</Badge>
-            <JsonDetails
-              data={result.retrieval}
-              title="Measured retrieval results"
-            />
-            <JsonDetails
-              data={{ safety: result.safety, baselines: result.baselines }}
-              title="Unmeasured backend examples — not experimental evidence"
-            />
+            <Badge tone="info">{result.status}</Badge>
+            <p className="body-copy">
+              {result.corpus_size} indexed documents · {result.embedding_model}{" "}
+              · Model/index warmup {num(result.model_index_warmup_ms)} ms
+            </p>
+            <div className="table-scroll">
+              <table>
+                <caption>Measured retrieval baselines</caption>
+                <thead>
+                  <tr>
+                    <th>Strategy</th>
+                    <th>Scenarios</th>
+                    <th>Hit@1</th>
+                    <th>Hit@3</th>
+                    <th>Recall@5</th>
+                    <th>MRR</th>
+                    <th>NDCG@5</th>
+                    <th>p95 latency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.baselines.map((row) => (
+                    <tr key={row.strategy}>
+                      <td>{row.strategy.replaceAll("_", " ")}</td>
+                      <td>{row.scenarios}</td>
+                      <td>{num(row.hit_at_1, 3)}</td>
+                      <td>{num(row.hit_at_3, 3)}</td>
+                      <td>{num(row.recall_at_5, 3)}</td>
+                      <td>{num(row.mrr, 3)}</td>
+                      <td>{num(row.ndcg_at_5, 3)}</td>
+                      <td>{num(row.p95_latency_ms, 1)} ms</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Notice>
+              Safety evaluation: {result.safety.status.replaceAll("_", " ")}.{" "}
+              {result.safety.reason}
+            </Notice>
+            {result.limitations.map((limitation) => (
+              <p className="body-copy" key={limitation}>
+                {limitation}
+              </p>
+            ))}
+            <JsonDetails data={result} title="Full measured report" />
           </>
         ) : (
           <Empty

@@ -6,7 +6,7 @@ export default defineConfig({
   timeout: 30000,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://127.0.0.1:3117",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -20,10 +20,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    env: { PORT: "3100" },
-    url: "http://127.0.0.1:3100",
-    reuseExistingServer: !process.env.CI,
+    command: "npm run preview -- --host 127.0.0.1 --port 3117 --strictPort",
+    url: "http://127.0.0.1:3117",
+    reuseExistingServer: false,
     timeout: 60000,
   },
 });

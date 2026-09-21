@@ -189,9 +189,66 @@ export interface KpiMetrics {
   systemReadiness: string;
 }
 
-export interface DiagnosisResult {
-  diagnosis: string;
-  mitigation: string[];
-  confidenceScore: number;
-  pipeline?: any;
+/** LLM provider health status (from /api/v1/llm/status) */
+export interface LLMProviderInfo {
+  provider: string;
+  configured?: boolean;
+  credential_present?: boolean;
+  credential_validated?: boolean;
+  model?: string;
+  model_available?: boolean | null;
+  status: string;
+  circuit_state?: string;
+  is_paid?: boolean;
+  cost_type?: string;
+  latency_ms?: number | null;
+  last_error_code?: string | null;
+}
+
+export interface LLMStatusResponse {
+  primary: LLMProviderInfo;
+  fallbacks: LLMProviderInfo[];
+  active_provider: string;
+  active_model: string;
+  fallback_used: boolean;
+  allow_paid_fallback: boolean;
+  cost_controls: {
+    max_output_tokens: number;
+    timeout_seconds: number;
+    max_retries: number;
+    max_requests_per_incident: number;
+  };
+}
+
+
+
+/** LLM provider health status (from /api/v1/llm/status) */
+export interface LLMProviderInfo {
+  provider: string;
+  configured?: boolean;
+  credential_present?: boolean;
+  credential_validated?: boolean;
+  model?: string;
+  model_available?: boolean | null;
+  status: string;
+  circuit_state?: string;
+  is_paid?: boolean;
+  cost_type?: string;
+  latency_ms?: number | null;
+  last_error_code?: string | null;
+}
+
+export interface LLMStatusResponse {
+  primary: LLMProviderInfo;
+  fallbacks: LLMProviderInfo[];
+  active_provider: string;
+  active_model: string;
+  fallback_used: boolean;
+  allow_paid_fallback: boolean;
+  cost_controls: {
+    max_output_tokens: number;
+    timeout_seconds: number;
+    max_retries: number;
+    max_requests_per_incident: number;
+  };
 }

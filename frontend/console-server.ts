@@ -21,6 +21,8 @@ async function startServer() {
       };
       if (req.headers.authorization)
         headers.Authorization = req.headers.authorization;
+      if (typeof req.headers["x-correlation-id"] === "string")
+        headers["X-Correlation-ID"] = req.headers["x-correlation-id"];
       if (req.headers["x-api-key"])
         headers["X-API-Key"] = String(req.headers["x-api-key"]);
       const upstream = await fetch(`${backend}${req.originalUrl}`, {
@@ -37,14 +39,14 @@ async function startServer() {
           "Content-Type",
           upstream.headers.get("content-type") || "application/json",
         );
+      const correlation = upstream.headers.get("x-correlation-id");
+      if (correlation) res.setHeader("X-Correlation-ID", correlation);
       res.send(await upstream.text());
     } catch {
-      res
-        .status(502)
-        .json({
-          error:
-            "Backend unavailable. Check the configured backend address and server status.",
-        });
+      res.status(502).json({
+        error:
+          "Backend unavailable. Check the configured backend address and server status.",
+      });
     }
   });
   if (process.env.NODE_ENV !== "production") {

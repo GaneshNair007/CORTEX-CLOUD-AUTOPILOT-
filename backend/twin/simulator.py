@@ -5,8 +5,8 @@ Performs dependency-aware pre-flight simulation on shadow state before executing
 
 from typing import Dict, Any, List, Optional
 import copy
-from topology.graph import topology
-from topology.blast_radius import calculate_blast_radius
+from backend.topology.graph import topology
+from backend.topology.blast_radius import calculate_blast_radius
 
 
 class CounterfactualTwin:

@@ -17,18 +17,25 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+# Runtime databases are rebuilt from canonical source documents and migrations.
 *.db
-*.sqlite
-*.sqlite3
+*.sqlite*
+.venv-clean/
 
 # Environment
 .env
 .env.local
 .env.*.local
 
-# Vector DB (large binary files)
-rag/chroma_db/
+# Generated indexes, audit exports, and incident logs may contain sensitive context.
 backend/rag/chroma_db/
+backend/data/*.jsonl
+backend/tools/events.jsonl
+backend/tools/evidence_ledger.jsonl
+.kiro/
+backend/data/chroma/
+backend/.env.setup.lock
+frontend/dist-static/
 
 # Agent workspace files
 .agents/

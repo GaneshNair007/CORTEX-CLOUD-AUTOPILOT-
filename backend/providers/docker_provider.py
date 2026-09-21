@@ -1,7 +1,7 @@
 """
 CORTEX Cloud Autopilot — Docker Cloud Provider
 Uses the official Docker Python SDK to manage containers when Docker daemon is available.
-Gracefully delegates to LocalSandboxProvider when Docker daemon is unreachable.
+Docker is explicit opt-in. Unavailable/unsupported operations fail without a sandbox fallback.
 """
 
 from typing import Dict, Any, List, Optional
@@ -24,7 +24,7 @@ class DockerProvider(CloudProvider):
     """
 
     def __init__(self):
-        self.fallback = LocalSandboxProvider()
+
         self.client = None
         self.is_connected = False
 
@@ -39,7 +39,7 @@ class DockerProvider(CloudProvider):
 
     def list_resources(self) -> List[Dict[str, Any]]:
         if not self.is_connected or not self.client:
-            return self.fallback.list_resources()
+            return []
 
         try:
             containers = self.client.containers.list(all=True)
@@ -54,11 +54,11 @@ class DockerProvider(CloudProvider):
                 for c in containers
             ]
         except Exception:
-            return self.fallback.list_resources()
+            return []
 
     def get_resource_state(self, service: str) -> Dict[str, Any]:
         if not self.is_connected or not self.client:
-            return self.fallback.get_resource_state(service)
+            return {"service": service, "status": "UNKNOWN", "state_available": False, "provider": "docker"}
 
         try:
             c = self.client.containers.get(service)
@@ -71,45 +71,46 @@ class DockerProvider(CloudProvider):
                 "created": c.attrs.get("Created"),
             }
         except Exception:
-            return self.fallback.get_resource_state(service)
+            return {"service": service, "status": "UNKNOWN", "state_available": False, "provider": "docker"}
 
     def get_metrics(self, service: str) -> Dict[str, Any]:
         # Always use sandbox HTTP metrics collector for application-level latency/RPS
-        return self.fallback.get_metrics(service)
+        return {"service": service, "metrics_available": False, "source": "unavailable", "simulated": False}
 
     def restart_service(self, service: str) -> Dict[str, Any]:
         if not self.is_connected or not self.client:
-            return self.fallback.restart_service(service)
+            return {"status": "FAILED", "service": service, "error": "DOCKER_UNAVAILABLE_OR_RESTART_FAILED"}
 
         try:
             c = self.client.containers.get(service)
             c.restart(timeout=5)
+            c.reload()
             return {
-                "status": "SUCCESS",
+                "status": "SUCCESS" if c.status == "running" else "FAILED",
                 "service": service,
                 "container_id": c.id[:12],
                 "action": "docker_restart",
                 "timestamp": time.time(),
             }
         except Exception:
-            return self.fallback.restart_service(service)
+            return {"status": "FAILED", "service": service, "error": "DOCKER_UNAVAILABLE_OR_RESTART_FAILED"}
 
     def scale_service(self, service: str, replicas: int) -> Dict[str, Any]:
         # Docker standalone containers scale by replica process or sandbox manager
-        return self.fallback.scale_service(service, replicas)
+        return {"status": "FAILED", "error": "STANDALONE_DOCKER_SCALING_NOT_IMPLEMENTED"}
 
     def rollback_service(self, service: str, revision: Optional[str] = None) -> Dict[str, Any]:
-        return self.fallback.rollback_service(service, revision)
+        return {"status": "FAILED", "error": "DOCKER_ROLLBACK_NOT_IMPLEMENTED"}
 
     def health_check(self, service: str) -> Dict[str, Any]:
         if not self.is_connected or not self.client:
-            return self.fallback.health_check(service)
+            return {"status": "UNKNOWN", "service": service, "error": "DOCKER_UNAVAILABLE"}
 
         try:
             c = self.client.containers.get(service)
             return {"status": "UP" if c.status == "running" else "DOWN", "service": service}
         except Exception:
-            return self.fallback.health_check(service)
+            return {"status": "UNKNOWN", "service": service, "error": "DOCKER_UNAVAILABLE"}
 
     def estimate_cost(self, service: str, replicas: int) -> float:
-        return self.fallback.estimate_cost(service, replicas)
+        raise NotImplementedError("Docker billing estimation is not connected")

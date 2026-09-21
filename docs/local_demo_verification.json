@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "timestamp": "2026-09-20T20:08:19.453694+00:00",
+  "checks": [
+    {
+      "name": "SQL and actual Chroma startup",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous mutation denied",
+      "status": "PASS"
+    },
+    {
+      "name": "viewer mutation denied",
+      "status": "PASS"
+    },
+    {
+      "name": "eight live HTTP model services",
+      "status": "PASS"
+    },
+    {
+      "name": "real hybrid retrieval and explanations",
+      "status": "PASS"
+    },
+    {
+      "name": "dangerous database mutation blocked",
+      "status": "PASS"
+    },
+    {
+      "name": "dry run leaves resource unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "shared kill switch blocks chaos",
+      "status": "PASS"
+    },
+    {
+      "name": "authorized real sandbox fault",
+      "status": "PASS"
+    },
+    {
+      "name": "verification establishes modeled recovery",
+      "status": "PASS"
+    },
+    {
+      "name": "verified memory immediately searchable in Chroma",
+      "status": "PASS"
+    },
+    {
+      "name": "one visible approval record",
+      "status": "PASS"
+    },
+    {
+      "name": "approval matches console contract",
+      "status": "PASS"
+    },
+    {
+      "name": "approved exact action executes",
+      "status": "PASS"
+    },
+    {
+      "name": "approval consumed",
+      "status": "PASS"
+    },
+    {
+      "name": "audit hash chain intact",
+      "status": "PASS"
+    },
+    {
+      "name": "heuristic never reported as external AI",
+      "status": "PASS"
+    }
+  ],
+  "knowledge_documents_after_learning": 37,
+  "execution_environment": "isolated_local_sandbox",
+  "real_external_ai_test": "NOT_RUN"
+}

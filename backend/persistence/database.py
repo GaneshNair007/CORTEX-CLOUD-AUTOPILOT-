@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+from backend.config.environment import load_environment
+
+load_environment()
 
 try:
     from backend.persistence.models import (
@@ -28,13 +31,13 @@ except ImportError:
         IdempotencyRecordDB
     )
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "cortex_control_plane.db"
+DB_PATH = Path(os.environ.get("CORTEX_DATA_DIR", Path(__file__).resolve().parent.parent / "data")) / "cortex_control_plane.db"
 os.makedirs(DB_PATH.parent, exist_ok=True)
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+DATABASE_URL = os.environ.get("CORTEX_DATABASE_URL", f"sqlite:///{DB_PATH}")
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    connect_args={"check_same_thread": False, "timeout": 30} if DATABASE_URL.startswith("sqlite") else {},
     echo=False
 )
 SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)

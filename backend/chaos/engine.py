@@ -86,24 +86,20 @@ class ChaosEngine:
         elif service_name == "postgres-primary":
             service_name = "postgres"
 
-        # Apply specific fault types
-        result = {}
-        if fault_type == "db_outage":
-            # Target postgres or redis directly
-            db_target = "redis" if "redis" in service_name else "postgres"
-            result = sandbox_manager.inject_fault(db_target, "crash", duration_sec=duration_sec, intensity=1.0)
-            target_to_record = db_target
-        elif fault_type in ("crash", "process_kill"):
-            result = sandbox_manager.inject_fault(service_name, "crash", duration_sec=duration_sec, intensity=1.0)
-            target_to_record = service_name
-        elif fault_type == "traffic_flood":
-            # High intensity latency + error burst
-            result = sandbox_manager.inject_fault(service_name, "latency", duration_sec=duration_sec, intensity=max(150.0, intensity * 50))
-            sandbox_manager.inject_fault(service_name, "error_burst", duration_sec=duration_sec, intensity=min(80.0, intensity * 20))
-            target_to_record = service_name
-        else:
-            result = sandbox_manager.inject_fault(service_name, fault_type, duration_sec=duration_sec, intensity=intensity)
-            target_to_record = service_name
+        from backend.cortex.gateway import execution_gateway
+        from backend.models.proposals import ActionProposal
+        from backend.providers.sandbox_provider import LocalSandboxProvider
+        if not 1 <= duration_sec <= 120:
+            return {"status": "REJECTED", "error": "Duration must be 1–120 seconds"}
+        target_to_record = ("redis" if "redis" in service_name else "postgres") if fault_type == "db_outage" else service_name
+        actual_fault = "crash" if fault_type in {"crash", "process_kill", "db_outage"} else "latency" if fault_type == "traffic_flood" else fault_type
+        proposal = ActionProposal(incident_id=cid, action_type="chaos_inject", target=target_to_record,
+            params={"service": target_to_record, "fault_type": actual_fault, "duration_sec": duration_sec, "intensity": intensity},
+            risk_score=40, generated_by="cortex-chaos-engine")
+        execution = execution_gateway.evaluate_and_execute(proposal, custom_provider=LocalSandboxProvider())
+        if execution.status != "SUCCESS":
+            return {"status": execution.status, "execution_result": execution.model_dump(mode="json")}
+        result = execution.output
 
         experiment_id = f"exp-{target_to_record}-{fault_type}-{int(time.time())}"
         exp_record = {
@@ -203,7 +199,15 @@ class ChaosEngine:
             service_name = "postgres"
 
         # Restart / reset service state in sandbox
-        res = sandbox_manager.restart_service(service_name)
+        from backend.cortex.gateway import execution_gateway
+        from backend.models.proposals import ActionProposal
+        from backend.providers.sandbox_provider import LocalSandboxProvider
+        proposal = ActionProposal(incident_id=f"CHAOS-CLEAR-{time.time_ns()}", action_type="chaos_clear", target=service_name,
+            params={"service": service_name}, risk_score=20, generated_by="chaos-cleanup")
+        execution = execution_gateway.evaluate_and_execute(proposal, custom_provider=LocalSandboxProvider())
+        if execution.status != "SUCCESS":
+            return {"status": execution.status, "execution_result": execution.model_dump(mode="json")}
+        res = execution.output
 
         with self._lock:
             if experiment_id and experiment_id in self._active_experiments:
@@ -228,7 +232,7 @@ class ChaosEngine:
             # Auto-expire completed ones
             for exp in self._active_experiments.values():
                 if exp["status"] == "RUNNING" and now > exp["expires_at"]:
-                    exp["status"] = "COMPLETED"
+                    exp["status"] = "EXPIRED_AWAITING_CLEANUP"
             return list(self._active_experiments.values())
 
     def stop_all(self, environment: str = "sandbox") -> Dict[str, Any]:
@@ -236,16 +240,11 @@ class ChaosEngine:
         if environment.lower() not in self.ALLOWED_ENVIRONMENTS:
             raise PermissionError(f"Safety violation: stop_all rejected for environment '{environment}'")
 
-        cleared_services = []
         with self._lock:
-            for eid, exp in list(self._active_experiments.items()):
-                target = exp.get("target_service")
-                if target and target not in cleared_services:
-                    sandbox_manager.restart_service(target)
-                    cleared_services.append(target)
-                exp["status"] = "ABORTED"
-
-        return {"status": "ALL_STOPPED", "cleared_services": cleared_services}
+            targets = {exp["target_service"] for exp in self._active_experiments.values()}
+        results = {target: self.clear_faults(target, environment) for target in targets}
+        cleared = [target for target, result in results.items() if result["status"] == "CLEARED"]
+        return {"status": "ALL_STOPPED" if len(cleared) == len(targets) else "BLOCKED", "cleared_services": cleared, "results": results}
 
 
 chaos_engine = ChaosEngine()

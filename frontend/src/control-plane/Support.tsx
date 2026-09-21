@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { client, getBase, saveBase } from "./client";
+import {
+  client,
+  getBase,
+  saveBase,
+  hasOperatorToken,
+  setOperatorToken,
+  clearOperatorToken,
+} from "./client";
+import { AiStatus } from "./AiStatus";
 import { useResource } from "./hooks";
 import { Badge, Button, Empty, Notice, Panel, ResourceState, num } from "./ui";
 export function Reliability() {
@@ -128,44 +136,90 @@ export function Settings({ onSave }: { onSave: () => void }) {
     }
   });
   const [error, setError] = useState("");
+  const [token, setToken] = useState("");
+  const [authenticated, setAuthenticated] = useState(hasOperatorToken);
   return (
-    <Panel
-      title="Console connection"
-      detail="Choose the backend for this browser tab."
-    >
-      <form
-        className="settings-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          try {
-            saveBase(value);
-            setError("");
-            onSave();
-          } catch (e) {
-            setError(e instanceof Error ? e.message : "Invalid address");
-          }
-        }}
+    <>
+      <Panel
+        title="Console connection"
+        detail="Choose the backend for this browser tab."
       >
-        <label>
-          Backend base URL
-          <input
-            aria-label="Backend base URL"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="http://localhost:8000"
-          />
-        </label>
-        <p className="body-copy">
-          Leave blank to use the same-origin frontend proxy. A static-hosted
-          frontend needs the HTTPS address of your separately hosted Python API.
-        </p>
-        <Notice>
-          The selected backend receives console requests. The address is stored
-          for this browser tab only. Do not enter API keys or passwords.
-        </Notice>
-        {error && <Notice danger>{error}</Notice>}
-        <Button type="submit">Save connection and reconnect</Button>
-      </form>
-    </Panel>
+        <form
+          className="settings-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            try {
+              saveBase(value);
+              if (token.trim()) setOperatorToken(token);
+              setToken("");
+              setAuthenticated(hasOperatorToken());
+              setError("");
+              onSave();
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Invalid address");
+            }
+          }}
+        >
+          <label>
+            Backend base URL
+            <input
+              aria-label="Backend base URL"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="http://localhost:8000"
+            />
+          </label>
+          <p className="body-copy">
+            Leave blank to use the same-origin frontend proxy. A static-hosted
+            frontend needs the HTTPS address of your separately hosted Python
+            API.
+          </p>
+          <Notice>
+            The selected backend receives console requests. The address is
+            stored for this browser tab only.
+          </Notice>
+          <label>
+            Console access token
+            <input
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="Console access token"
+              value={token}
+              onChange={(event) => setToken(event.target.value)}
+              placeholder="Server-issued operator or administrator token"
+            />
+          </label>
+          <p className="body-copy">
+            Use your console access token, never an AI provider API key. Access
+            stays in memory for up to 30 minutes and is cleared on page reload
+            or a backend address change. The server decides which operations
+            your role permits.
+          </p>
+          <Badge tone={authenticated ? "info" : "neutral"}>
+            {authenticated
+              ? "Access token held in memory"
+              : "No access token in memory"}
+          </Badge>
+          {authenticated && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                clearOperatorToken();
+                setToken("");
+                setAuthenticated(false);
+                onSave();
+              }}
+            >
+              Clear console access
+            </Button>
+          )}
+          {error && <Notice danger>{error}</Notice>}
+          <Button type="submit">Save connection and reconnect</Button>
+        </form>
+      </Panel>
+      <AiStatus />
+    </>
   );
 }

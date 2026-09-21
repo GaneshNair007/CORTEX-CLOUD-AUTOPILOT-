@@ -103,7 +103,7 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
   const health = useResource(client.health, 10000);
   const available =
     !!health.data &&
-    health.data.status === "ok" &&
+    ["ok", "degraded"].includes(health.data.status) &&
     !health.error &&
     !health.stale;
   const frozen = health.data?.kill_switch_engaged ?? true;
@@ -354,7 +354,9 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
                 <span>
                   {health.loading && !health.data
                     ? "Connecting to the control plane…"
-                    : "Backend unavailable. Live actions are disabled; existing snapshots may be stale."}
+                    : health.error?.includes("Console access")
+                      ? health.error
+                      : "Backend unavailable. Live actions are disabled; existing snapshots may be stale."}
                 </span>
                 <a href="#/settings">Connection settings</a>
                 <button onClick={health.refresh}>Retry</button>
@@ -364,6 +366,12 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
               <Notice>
                 The backend reports a freeze flag. Review CORTEX Guard before
                 resuming.
+              </Notice>
+            )}
+            {available && health.data?.status === "degraded" && (
+              <Notice>
+                The API is reachable with degraded components. Review current
+                evidence and AI status before proceeding.
               </Notice>
             )}
             {route !== "console" && (

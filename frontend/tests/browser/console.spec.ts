@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   await mockApi(page);
 });
 
-for (const width of [390, 1440]) {
+for (const width of [390, 768, 1440]) {
   test(`all routed workspaces have a readable light shell without viewport overflow at ${width}px`, async ({
     page,
   }) => {
@@ -170,6 +170,19 @@ test("expired approvals cannot be submitted", async ({ page }) => {
     page.getByRole("button", { name: "Review approval" }),
   ).toBeDisabled();
   await expect(page.getByText("Re-evaluation required")).toBeVisible();
+});
+
+test("durable approval response closes review and shows actual execution outcome", async ({ page }) => {
+  await page.route("**/api/cortex/approvals/resolve", r => r.fulfill({
+    json: { status: "approved", execution_result: { status: "BLOCKED", output: { reason: "Current policy changed" } } },
+  }));
+  await page.goto("/#/approvals");
+  await page.getByRole("button", { name: "Review approval" }).click();
+  await page.getByLabel("Operator name").fill("Test operator");
+  await page.getByRole("button", { name: "Approve and submit" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Resolution response" })).toBeVisible();
+  await expect(page.getByText("Approval was approved.")).toHaveCount(0);
 });
 test("twin simulation precedes reviewed gateway execution and preserves blocked status", async ({
   page,

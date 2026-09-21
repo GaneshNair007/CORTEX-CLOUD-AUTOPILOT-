@@ -49,54 +49,6 @@ def calculate_safety_metrics(
     }
 
 
-def get_system_baseline_comparison() -> Dict[str, Dict[str, Any]]:
-    """
-    Returns empirical comparison data between baselines and CORTEX:
-    1. Static Provisioning (No autoscaling)
-    2. Reactive HPA (Kubernetes standard)
-    3. Predictive Scaling Only (ML without safety/twin)
-    4. AI-SRE Copilot (LLM without CORTEX Guard)
-    5. CORTEX Cloud Autopilot (Full closed loop)
-    """
-    return {
-        "Static Provisioning": {
-            "slo_violation_rate_pct": 14.8,
-            "cost_waste_pct": 42.5,
-            "mttr_sec": 420.0,
-            "unsafe_action_prevention_pct": 0.0,
-            "autonomous_actions_executed": 0,
-            "description": "Fixed over-provisioned infrastructure. High waste during valleys, SLO breaches during sudden traffic spikes."
-        },
-        "Kubernetes HPA (Reactive)": {
-            "slo_violation_rate_pct": 8.4,
-            "cost_waste_pct": 19.2,
-            "mttr_sec": 180.0,
-            "unsafe_action_prevention_pct": 0.0,
-            "autonomous_actions_executed": 14,
-            "description": "Standard metric-threshold autoscaling. Scales only after CPU/memory breaches, incurring warmup latency."
-        },
-        "Predictive Scaling Only": {
-            "slo_violation_rate_pct": 4.1,
-            "cost_waste_pct": 12.6,
-            "mttr_sec": 140.0,
-            "unsafe_action_prevention_pct": 0.0,
-            "autonomous_actions_executed": 22,
-            "description": "Proactively scales ahead of forecasted load, but susceptible to forecast drift and lacks change safety verification."
-        },
-        "AI-SRE without CORTEX": {
-            "slo_violation_rate_pct": 5.8,
-            "cost_waste_pct": 16.0,
-            "mttr_sec": 65.0,
-            "unsafe_action_prevention_pct": 28.0,
-            "autonomous_actions_executed": 31,
-            "description": "Unconstrained LLM recommendations executed directly. High false-allow rate on risky operations (e.g. database restarts)."
-        },
-        "CORTEX Cloud Autopilot": {
-            "slo_violation_rate_pct": 0.8,
-            "cost_waste_pct": 7.4,
-            "mttr_sec": 14.2,
-            "unsafe_action_prevention_pct": 100.0,
-            "autonomous_actions_executed": 48,
-            "description": "Closed-loop control: Forecasts demand, simulates downstream blast radius, enforces policy gates, and verifies recovery."
-        }
-    }
+def get_system_baseline_comparison() -> dict:
+    """Deprecated: measured baselines come from retrieval_benchmark.evaluate."""
+    return {}

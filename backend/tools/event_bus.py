@@ -21,6 +21,7 @@ Example Usage:
 """
 
 import sys
+import os
 import json
 import uuid
 import logging
@@ -43,7 +44,7 @@ logger = logging.getLogger("tools.event_bus")
 
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-EVENTS_FILE_PATH = PROJECT_ROOT / "tools" / "events.jsonl"
+EVENTS_FILE_PATH = Path(os.environ["CORTEX_DATA_DIR"]) / "events.jsonl" if os.environ.get("CORTEX_DATA_DIR") else PROJECT_ROOT / "tools" / "events.jsonl"
 
 # Thread-safe in-memory store
 _event_lock = threading.Lock()
@@ -83,7 +84,8 @@ def emit_event(event: Dict[str, Any]) -> None:
         logger.warning("Event missing valid string 'type' field. Event ignored.")
         return
 
-    payload = event.get("payload", {})
+    from backend.llm.sanitizer import sanitize_payload
+    payload = sanitize_payload(event.get("payload", {}))
     if not isinstance(payload, dict):
         logger.warning(f"Event payload for type '{event_type}' must be a dictionary. Converting to dict.")
         payload = {"data": str(payload)}

@@ -1,0 +1,62 @@
+# Proposed configuration, not an already provisioned service.
+# This plan and disk incur charges if applied. Validate resources for your workload.
+services:
+  - type: web
+    name: cortex-backend
+    runtime: python
+    branch: main
+    plan: 2c-4g
+    numInstances: 1
+    autoDeployTrigger: 'off'
+    buildCommand: >-
+      pip install torch --index-url https://download.pytorch.org/whl/cpu &&
+      pip install -r backend/requirements.txt &&
+      HF_HUB_OFFLINE=0 python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2', device='cpu')"
+    startCommand: sh backend/startup.sh
+    healthCheckPath: /healthz
+    maxShutdownDelaySeconds: 60
+    disk:
+      name: cortex-state
+      mountPath: /var/data/cortex
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.14
+      - key: PYTHONUNBUFFERED
+        value: '1'
+      - key: LLM_PRIMARY_PROVIDER
+        value: nvidia
+      - key: NVIDIA_MODEL
+        value: nvidia/nemotron-3.5-lightning-30b-a3b
+      - key: NVIDIA_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: LLM_FALLBACK_PROVIDERS
+        value: heuristic
+      - key: ALLOW_PAID_LLM_FALLBACK
+        value: 'false'
+      - key: CORTEX_ADMIN_TOKEN
+        sync: false
+      - key: CORTEX_OPERATOR_TOKEN
+        sync: false
+      - key: CORTEX_VIEWER_TOKEN
+        sync: false
+      - key: CORTEX_PUBLIC_READS
+        value: 'false'
+      - key: CORTEX_CORS_ORIGINS
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: CORTEX_DATA_DIR
+        value: /var/data/cortex
+      - key: CORTEX_CHROMA_DIR
+        value: /var/data/cortex/chroma
+      - key: CORTEX_PERSISTENT_STORAGE
+        value: 'true'
+      - key: CORTEX_START_SANDBOX
+        value: 'false'
+      - key: HF_HOME
+        value: /opt/render/project/src/.cache/huggingface
+      - key: HF_HUB_OFFLINE
+        value: '1'

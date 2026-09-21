@@ -1,1 +1,1 @@
-from optimization.optimizer import optimizer, MultiObjectiveOptimizer, CandidateConfiguration
+from backend.optimization.optimizer import optimizer, MultiObjectiveOptimizer, CandidateConfiguration

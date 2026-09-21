@@ -54,15 +54,16 @@ export async function runTier1Tests(runner: TestRunner) {
   });
 
   // Test 1.3: Typography Hierarchy & Font Imports
-  await runner.test('T1.3: Google Font imports and typography utility classes', () => {
+  await runner.test('T1.3: Bundled font imports and typography utility classes', () => {
     const htmlContent = readConsoleFile('index.html');
     const cssContent = readConsoleFile('src/index.css');
 
-    // Verify Syne, Sora, and IBM Plex Mono fonts in index.html
-    expect(htmlContent).toContain('fonts.googleapis.com');
-    expect(htmlContent).toContain('Syne');
-    expect(htmlContent).toContain('Sora');
-    expect(htmlContent).toContain('IBM+Plex+Mono');
+    // Active typography must not require a third-party network request.
+    const entryContent = readConsoleFile('src/main.tsx');
+    expect(entryContent).toContain('@fontsource-variable/inter-tight');
+    expect(entryContent).toContain('@fontsource/inter');
+    expect(entryContent).toContain('@fontsource/ibm-plex-mono');
+    expect(htmlContent.includes('fonts.googleapis.com')).toBe(false);
 
     // Verify Typography utility classes
     expect(cssContent).toContain('.font-display');

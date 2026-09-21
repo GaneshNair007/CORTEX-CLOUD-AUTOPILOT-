@@ -5,6 +5,7 @@ Observe -> Understand -> Predict -> Simulate -> Optimize -> Authorize -> Act -> 
 """
 
 from datetime import datetime, timezone
+from uuid import uuid4
 from typing import Dict, Any, List, Optional, Literal
 from pydantic import BaseModel, Field
 
@@ -57,7 +58,7 @@ class ActionProposal(BaseModel):
     CRITICAL INVARIANT: The AI agent may ONLY produce ActionProposals.
     It has ZERO authority to execute infrastructure mutations directly.
     """
-    proposal_id: str = Field(default_factory=lambda: f"prop_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}")
+    proposal_id: str = Field(default_factory=lambda: f"prop_{uuid4().hex}")
     incident_id: str
     action_type: str
     target: str
@@ -66,7 +67,7 @@ class ActionProposal(BaseModel):
     evidence_ids: List[str] = Field(default_factory=list)
     rationale: str = Field(default="Candidate remediation action")
     reason: Optional[str] = None
-    risk_score: int = Field(default=50)
+    risk_score: int = Field(default=50, ge=0, le=100)
     dry_run: bool = False
     generated_by: str = "cortex-agent"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -118,7 +119,9 @@ class ApprovalRecord(BaseModel):
     params: Dict[str, Any]
     risk_score: int
     reason: str
-    status: Literal["PENDING", "APPROVED", "REJECTED", "EXPIRED"] = "PENDING"
+    status: Literal["PENDING", "APPROVED", "REJECTED", "EXPIRED", "CONSUMED"] = "PENDING"
+    state_version: str = "1.0"
+    resource_version: str = ""
     approver: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime
@@ -145,12 +148,14 @@ class VerificationResult(BaseModel):
     operation_id: str
     service: str
     outcome: Literal["RECOVERED", "PARTIALLY_RECOVERED", "NO_CHANGE", "WORSE", "UNKNOWN"]
-    pre_metrics: Dict[str, float]
-    post_metrics: Dict[str, float]
-    p95_change_ms: float
-    error_change_pct: float
+    pre_metrics: Dict[str, Optional[float]]
+    post_metrics: Dict[str, Optional[float]]
+    p95_change_ms: Optional[float]
+    error_change_pct: Optional[float]
     slo_satisfied: bool
     verified_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     settling_time_sec: float = 5.0
     rollback_triggered: bool = False
     rollback_result: Optional[Dict[str, Any]] = None
+    simulated: bool = False
+    telemetry_source: Optional[str] = None

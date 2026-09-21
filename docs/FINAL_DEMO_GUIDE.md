@@ -124,23 +124,45 @@ Docker/image runtime verification requires a working Docker daemon. A reviewed D
 
 ## 7. Render backend and Vercel frontend
 
-No service is deployed by committing these files. Applying `render.yaml` creates paid compute/disk resources. Review the current hosting cost and account limits before applying it.
+- Frontend: https://cortex-cloud-autopilot.vercel.app
+- Backend: https://cortex-backend-ehye.onrender.com
+- Render service: srv-daorch80cd8s73ao4760, free plan, one worker, no disk.
+- Validated blueprint: render.yaml. See FREE_HOSTING.md for limitations.
 
-The proposed backend uses one `2c-4g` instance and a 1 GB persistent volume for the current small demonstration corpus. This is a starting configuration, not a measured capacity guarantee. Embedding model cache lives outside the state volume. Expand state capacity as incidents grow. Do not use a 512 MB free instance and claim the full model stack is validated there. Resource IDs, deployment fields and Python version configuration follow Render's [Blueprint reference](https://render.com/docs/blueprint-spec) and [Python version guide](https://render.com/docs/python-version).
+The backend uses Chroma's all-MiniLM-L6-v2 ONNX export with one CPU thread and
+one-document batches. No PyTorch is installed in the free deployment. The local
+default remains SentenceTransformers. Free storage resets on sleep/restart/redeploy;
+canonical evidence rebuilds, but learned runtime state is not durable.
 
-The blueprint runs from the repository root, pre-caches MiniLM at build, starts one Python worker, disables automatic deploys, and supplies storage paths under `/var/data/cortex`. Secrets use `sync: false`; enter fresh provider credentials and distinct long role tokens in the hosting dashboard. Set `CORTEX_CORS_ORIGINS` to the actual frontend origin, with no wildcard. Set `APP_URL` to the actual backend address.
+Revoke the NVIDIA key exposed in commit 01c51d5. Enter a fresh NVIDIA_API_KEY in
+https://dashboard.render.com/web/srv-daorch80cd8s73ao4760/env and redeploy.
+Do not place it in Git or frontend build variables. AI remains unavailable until
+an actual fresh-key inference succeeds.
 
-Persistent disks are attached to one service instance, and backups/capacity remain operational responsibilities. Review [Render disk behavior](https://render.com/docs/disks). If you remove the disk, set `CORTEX_PERSISTENT_STORAGE=false` and report ephemeral storage honestly.
+For protected console actions, copy CORTEX_OPERATOR_TOKEN or CORTEX_ADMIN_TOKEN
+from the private Render environment into the site's Connection settings > Console
+access token. Never enter an AI-provider key there. Console access stays in memory.
+Read-only pages and searches are public. Infrastructure execution is a local sandbox.
 
-For Vercel:
+Vercel uses frontend as project root, npm ci, npm run build:static, dist-static,
+and VITE_API_URL=https://cortex-backend-ehye.onrender.com. CORS permits that exact
+frontend origin. No credentials are exposed through VITE variables.
 
-1. Select `frontend` as the project root.
-2. Set `VITE_API_URL` to the actual HTTPS backend base URL.
-3. Keep role tokens and inference keys out of all frontend build variables.
-4. Use the committed `npm ci`, `npm run build:static`, `dist-static` settings.
-5. Check the deployed UI's network requests, CORS, motion assets and protected actions.
+Local free-runtime commands (PowerShell, repository root):
 
-After deployment, separately verify `/healthz`, `/readyz`, the authenticated provider status and an authorized local/sandbox operation. A healthy process, usable index, verified AI call and safe execution are distinct checks.
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r backend/requirements-free.txt
+$env:CORTEX_EMBEDDING_RUNTIME='onnx'
+$env:OMP_NUM_THREADS='1'
+$env:OPENBLAS_NUM_THREADS='1'
+.venv\Scripts\python.exe -m backend.scripts.prepare_embeddings
+.venv\Scripts\python.exe -m backend.rag.rebuild_index
+.venv\Scripts\python.exe -m pytest backend/tests -q
+.venv\Scripts\python.exe -m backend.evaluation.retrieval_benchmark --output docs/free_hosting_evaluation.json
+$env:CORTEX_START_SANDBOX='true'
+.venv\Scripts\python.exe -m uvicorn backend.api_server:app --host 127.0.0.1 --port 8000
+```
 
 ## Current acceptance record
 

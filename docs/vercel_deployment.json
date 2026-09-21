@@ -17,7 +17,9 @@
     }
   ],
   "public": true,
-  "backend_hosted": false,
-  "nvidia_live_test": "NOT_RUN",
-  "deployment_id": "dpl_FKnfQECSuuxY7JCJkZj1oaL7ssCK"
+  "backend_hosted": true,
+  "nvidia_live_test": "BLOCKED_MISSING_FRESH_CREDENTIAL",
+  "deployment_id": "dpl_EJHYEMWfmBN8jj85GNh6CGkCkJMG",
+  "backend_url": "https://cortex-backend-ehye.onrender.com",
+  "backend_plan": "free"
 }

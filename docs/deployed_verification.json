@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "timestamp": "2026-09-21T23:07:14.325394+00:00",
+  "frontend": "https://cortex-cloud-autopilot.vercel.app",
+  "backend": "https://cortex-backend-ehye.onrender.com",
+  "plan": "free",
+  "checks": [
+    {
+      "name": "SQL and semantic index ready",
+      "status": "PASS"
+    },
+    {
+      "name": "eight labeled sandbox services",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous mutation denied",
+      "status": "PASS"
+    },
+    {
+      "name": "viewer mutation denied",
+      "status": "PASS"
+    },
+    {
+      "name": "production cross-origin preflight",
+      "status": "PASS"
+    },
+    {
+      "name": "real semantic evidence with explanations",
+      "status": "PASS"
+    },
+    {
+      "name": "legacy retrieval compatible",
+      "status": "PASS"
+    },
+    {
+      "name": "authenticated action preview",
+      "status": "PASS"
+    },
+    {
+      "name": "dangerous action blocked",
+      "status": "PASS"
+    },
+    {
+      "name": "authorized sandbox fault",
+      "status": "PASS"
+    },
+    {
+      "name": "verified sandbox recovery",
+      "status": "PASS"
+    },
+    {
+      "name": "learned memory immediately searchable",
+      "status": "PASS"
+    },
+    {
+      "name": "audit chain intact",
+      "status": "PASS"
+    }
+  ],
+  "ai_status": "UNAVAILABLE",
+  "ai_credential_present": false,
+  "external_ai_verified": false,
+  "execution": "local_sandbox",
+  "persistent_storage": false
+}

@@ -1,0 +1,2074 @@
+{
+  "status": "completed",
+  "timestamp": "2026-09-21T23:01:39.036106+00:00",
+  "corpus_size": 35,
+  "index_revision": 35,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "model_index_warmup_ms": 2854.642,
+  "label_source": "backend/evaluation/retrieval_scenarios.json",
+  "limitations": [
+    "Small curated corpus; not a scale benchmark",
+    "Binary relevance labels are manually authored",
+    "Existing source incidents have no verified outcome provenance; trust effects are covered separately by lifecycle tests"
+  ],
+  "baselines": [
+    {
+      "strategy": "vector_only",
+      "scenarios": 20,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 0.976225,
+      "mean_latency_ms": 157.099,
+      "p95_latency_ms": 165.762,
+      "scenario_details": [
+        {
+          "scenario_id": "RET-01",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-010",
+            "RB-001_k8s_pod_crashloop",
+            "RB-008_failed_canary_deployment"
+          ],
+          "expected_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 160.429,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493
+        },
+        {
+          "scenario_id": "RET-02",
+          "retrieved_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop",
+            "RB-013_vector_fluentbit_logging",
+            "INC-2026-012",
+            "RB-008_failed_canary_deployment"
+          ],
+          "expected_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 150.376,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-03",
+          "retrieved_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "latency_ms": 157.952,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-04",
+          "retrieved_ids": [
+            "RB-003_postgres_replication_lag",
+            "INC-2026-004",
+            "RB-002_postgres_connection_pool",
+            "RB-014_postgres_deadlock_cascades",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "latency_ms": 163.277,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-05",
+          "retrieved_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-017",
+            "INC-2026-020",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "latency_ms": 163.726,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-06",
+          "retrieved_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction"
+          ],
+          "latency_ms": 166.416,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-07",
+          "retrieved_ids": [
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-006",
+            "INC-2026-015"
+          ],
+          "expected_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "latency_ms": 165.762,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-08",
+          "retrieved_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-003",
+            "INC-2026-017",
+            "INC-2026-011"
+          ],
+          "expected_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "latency_ms": 157.909,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-09",
+          "retrieved_ids": [
+            "INC-2026-009",
+            "INC-2026-005",
+            "RB-008_failed_canary_deployment",
+            "INC-2026-015",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment"
+          ],
+          "latency_ms": 157.656,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "scenario_id": "RET-10",
+          "retrieved_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-001",
+            "INC-2026-019"
+          ],
+          "expected_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure"
+          ],
+          "latency_ms": 153.505,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-11",
+          "retrieved_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-012",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 151.224,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-12",
+          "retrieved_ids": [
+            "INC-2026-012",
+            "INC-2026-002",
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 151.82,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493
+        },
+        {
+          "scenario_id": "RET-13",
+          "retrieved_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-020",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 152.073,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-14",
+          "retrieved_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-004",
+            "INC-2026-003",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "latency_ms": 156.282,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-15",
+          "retrieved_ids": [
+            "RB-013_vector_fluentbit_logging",
+            "INC-2026-015",
+            "INC-2026-012"
+          ],
+          "expected_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "latency_ms": 146.805,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-16",
+          "retrieved_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades",
+            "INC-2026-004",
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "expected_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "latency_ms": 165.142,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-17",
+          "retrieved_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-008"
+          ],
+          "expected_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 158.379,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-18",
+          "retrieved_ids": [
+            "INC-2026-018",
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging",
+            "INC-2026-002",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "expected_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 155.266,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8503449055347546
+        },
+        {
+          "scenario_id": "RET-19",
+          "retrieved_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "expected_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 150.577,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-20",
+          "retrieved_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-013"
+          ],
+          "expected_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 157.406,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    },
+    {
+      "strategy": "lexical_only",
+      "scenarios": 20,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "mean_latency_ms": 5.392,
+      "p95_latency_ms": 7.686,
+      "scenario_details": [
+        {
+          "scenario_id": "RET-01",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-011"
+          ],
+          "expected_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 8.661,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-02",
+          "retrieved_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-004",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 7.686,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-03",
+          "retrieved_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-017",
+            "INC-2026-016",
+            "INC-2026-006"
+          ],
+          "expected_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "latency_ms": 4.86,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-04",
+          "retrieved_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "INC-2026-011",
+            "RB-002_postgres_connection_pool",
+            "RB-005_redis_memory_eviction"
+          ],
+          "expected_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "latency_ms": 7.13,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-05",
+          "retrieved_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-003",
+            "INC-2026-017",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "expected_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "latency_ms": 4.125,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-06",
+          "retrieved_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "expected_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction"
+          ],
+          "latency_ms": 4.082,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-07",
+          "retrieved_ids": [
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "INC-2026-006",
+            "INC-2026-016",
+            "RB-005_redis_memory_eviction"
+          ],
+          "expected_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "latency_ms": 5.597,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-08",
+          "retrieved_ids": [
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-008",
+            "INC-2026-014",
+            "RB-004_api_gateway_504_timeouts",
+            "RB-002_postgres_connection_pool"
+          ],
+          "expected_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "latency_ms": 4.724,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-09",
+          "retrieved_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment",
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment"
+          ],
+          "latency_ms": 4.77,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-10",
+          "retrieved_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure",
+            "RB-004_api_gateway_504_timeouts",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-019"
+          ],
+          "expected_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure"
+          ],
+          "latency_ms": 4.671,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-11",
+          "retrieved_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-001",
+            "INC-2026-010"
+          ],
+          "expected_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 4.935,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-12",
+          "retrieved_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-011",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 4.822,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-13",
+          "retrieved_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution",
+            "RB-004_api_gateway_504_timeouts",
+            "RB-006_redis_latency_single_thread",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "expected_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 4.449,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-14",
+          "retrieved_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "expected_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "latency_ms": 5.542,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-15",
+          "retrieved_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "latency_ms": 3.995,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-16",
+          "retrieved_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-003",
+            "INC-2026-008"
+          ],
+          "expected_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "latency_ms": 6.292,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-17",
+          "retrieved_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-003",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 6.478,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-18",
+          "retrieved_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-015",
+            "INC-2026-001",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 4.935,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-19",
+          "retrieved_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 6.103,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-20",
+          "retrieved_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-013",
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "expected_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 3.978,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    },
+    {
+      "strategy": "hybrid",
+      "scenarios": 20,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "mean_latency_ms": 157.132,
+      "p95_latency_ms": 163.984,
+      "scenario_details": [
+        {
+          "scenario_id": "RET-01",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-002",
+            "INC-2026-010"
+          ],
+          "expected_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 163.984,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-02",
+          "retrieved_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "expected_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 157.031,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-03",
+          "retrieved_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-017",
+            "INC-2026-016",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "latency_ms": 153.171,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-04",
+          "retrieved_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-003",
+            "INC-2026-011"
+          ],
+          "expected_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "latency_ms": 162.794,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-05",
+          "retrieved_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-017",
+            "INC-2026-003",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "expected_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "latency_ms": 167.55,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-06",
+          "retrieved_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "expected_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction"
+          ],
+          "latency_ms": 158.263,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-07",
+          "retrieved_ids": [
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "latency_ms": 160.184,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-08",
+          "retrieved_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-005",
+            "INC-2026-014",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "expected_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "latency_ms": 152.831,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-09",
+          "retrieved_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment",
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment"
+          ],
+          "latency_ms": 155.395,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-10",
+          "retrieved_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-001",
+            "INC-2026-019",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "expected_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure"
+          ],
+          "latency_ms": 153.89,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-11",
+          "retrieved_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-002",
+            "INC-2026-012"
+          ],
+          "expected_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 155.9,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-12",
+          "retrieved_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-011",
+            "INC-2026-018",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "expected_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 150.252,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-13",
+          "retrieved_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-020",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "expected_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 158.632,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-14",
+          "retrieved_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "expected_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "latency_ms": 159.951,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-15",
+          "retrieved_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-012",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "latency_ms": 161.774,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-16",
+          "retrieved_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades",
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "latency_ms": 153.339,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-17",
+          "retrieved_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-003"
+          ],
+          "expected_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 151.75,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-18",
+          "retrieved_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-015",
+            "INC-2026-002",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "expected_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 153.656,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-19",
+          "retrieved_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "expected_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 151.985,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-20",
+          "retrieved_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-013",
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "expected_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 160.302,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    },
+    {
+      "strategy": "hybrid_context",
+      "scenarios": 20,
+      "hit_at_1": 0.95,
+      "hit_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 0.966667,
+      "ndcg_at_5": 0.978532,
+      "mean_latency_ms": 615.338,
+      "p95_latency_ms": 635.171,
+      "scenario_details": [
+        {
+          "scenario_id": "RET-01",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-010"
+          ],
+          "expected_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 635.171,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-02",
+          "retrieved_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop",
+            "RB-005_redis_memory_eviction",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-012"
+          ],
+          "expected_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 599.159,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-03",
+          "retrieved_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-004",
+            "INC-2026-016",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "latency_ms": 621.307,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-04",
+          "retrieved_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-003",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "expected_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "latency_ms": 602.142,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-05",
+          "retrieved_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-017",
+            "INC-2026-020",
+            "INC-2026-003"
+          ],
+          "expected_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "latency_ms": 598.678,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-06",
+          "retrieved_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-007",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction"
+          ],
+          "latency_ms": 598.014,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-07",
+          "retrieved_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-006",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "latency_ms": 612.212,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-08",
+          "retrieved_ids": [
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-008",
+            "INC-2026-005",
+            "INC-2026-014",
+            "INC-2026-017"
+          ],
+          "expected_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "latency_ms": 622.083,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-09",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "INC-2026-002",
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment"
+          ],
+          "latency_ms": 629.798,
+          "hit_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5706417189553201
+        },
+        {
+          "scenario_id": "RET-10",
+          "retrieved_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-001",
+            "INC-2026-019",
+            "INC-2026-020"
+          ],
+          "expected_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure"
+          ],
+          "latency_ms": 613.206,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-11",
+          "retrieved_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-012",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 611.444,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-12",
+          "retrieved_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-011",
+            "INC-2026-002",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 624.338,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-13",
+          "retrieved_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-020",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 602.692,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-14",
+          "retrieved_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-004",
+            "RB-008_failed_canary_deployment",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "expected_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "latency_ms": 622.851,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-15",
+          "retrieved_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging",
+            "INC-2026-012",
+            "INC-2026-002",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "latency_ms": 625.519,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-16",
+          "retrieved_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades",
+            "INC-2026-003",
+            "INC-2026-004",
+            "RB-002_postgres_connection_pool"
+          ],
+          "expected_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "latency_ms": 606.1,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-17",
+          "retrieved_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-015"
+          ],
+          "expected_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 619.937,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-18",
+          "retrieved_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-015",
+            "INC-2026-017",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "expected_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 599.927,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-19",
+          "retrieved_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "expected_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 652.783,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-20",
+          "retrieved_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-013",
+            "INC-2026-005",
+            "INC-2026-017"
+          ],
+          "expected_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 609.402,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    },
+    {
+      "strategy": "full",
+      "scenarios": 20,
+      "hit_at_1": 0.95,
+      "hit_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 0.966667,
+      "ndcg_at_5": 0.974518,
+      "mean_latency_ms": 630.051,
+      "p95_latency_ms": 651.128,
+      "scenario_details": [
+        {
+          "scenario_id": "RET-01",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop",
+            "INC-2026-002",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-010"
+          ],
+          "expected_ids": [
+            "INC-2026-001",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 646.299,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-02",
+          "retrieved_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-012",
+            "INC-2026-013"
+          ],
+          "expected_ids": [
+            "INC-2026-002",
+            "RB-001_k8s_pod_crashloop"
+          ],
+          "latency_ms": 647.015,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-03",
+          "retrieved_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-004",
+            "INC-2026-016",
+            "RB-003_postgres_replication_lag"
+          ],
+          "expected_ids": [
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool"
+          ],
+          "latency_ms": 620.823,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-04",
+          "retrieved_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag",
+            "INC-2026-003",
+            "RB-002_postgres_connection_pool",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-004",
+            "RB-003_postgres_replication_lag"
+          ],
+          "latency_ms": 639.392,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-05",
+          "retrieved_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-017",
+            "INC-2026-020",
+            "INC-2026-003"
+          ],
+          "expected_ids": [
+            "INC-2026-005",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "latency_ms": 622.049,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-06",
+          "retrieved_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction"
+          ],
+          "latency_ms": 634.112,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-07",
+          "retrieved_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread",
+            "INC-2026-006",
+            "RB-005_redis_memory_eviction",
+            "INC-2026-016"
+          ],
+          "expected_ids": [
+            "INC-2026-007",
+            "RB-006_redis_latency_single_thread"
+          ],
+          "latency_ms": 604.158,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-08",
+          "retrieved_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-005",
+            "INC-2026-011",
+            "INC-2026-014"
+          ],
+          "expected_ids": [
+            "INC-2026-008",
+            "RB-007_vpc_peering_network_partition"
+          ],
+          "latency_ms": 629.127,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-09",
+          "retrieved_ids": [
+            "INC-2026-001",
+            "INC-2026-002",
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-009",
+            "RB-008_failed_canary_deployment"
+          ],
+          "latency_ms": 616.265,
+          "hit_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5706417189553201
+        },
+        {
+          "scenario_id": "RET-10",
+          "retrieved_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure",
+            "INC-2026-001",
+            "INC-2026-019",
+            "INC-2026-020"
+          ],
+          "expected_ids": [
+            "INC-2026-010",
+            "RB-009_vault_jwt_auth_failure"
+          ],
+          "latency_ms": 640.083,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-11",
+          "retrieved_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-012",
+            "INC-2026-002",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "expected_ids": [
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 635.706,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-12",
+          "retrieved_ids": [
+            "INC-2026-012",
+            "INC-2026-011",
+            "RB-010_pvc_storage_pending_disk_full",
+            "INC-2026-002",
+            "INC-2026-018"
+          ],
+          "expected_ids": [
+            "INC-2026-012",
+            "RB-010_pvc_storage_pending_disk_full"
+          ],
+          "latency_ms": 654.367,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "scenario_id": "RET-13",
+          "retrieved_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-020",
+            "RB-004_api_gateway_504_timeouts",
+            "INC-2026-005"
+          ],
+          "expected_ids": [
+            "INC-2026-013",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 609.769,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-14",
+          "retrieved_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring",
+            "INC-2026-004",
+            "INC-2026-015",
+            "RB-008_failed_canary_deployment"
+          ],
+          "expected_ids": [
+            "INC-2026-014",
+            "RB-012_prometheus_tsdb_monitoring"
+          ],
+          "latency_ms": 651.128,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-15",
+          "retrieved_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging",
+            "INC-2026-012",
+            "INC-2026-002",
+            "INC-2026-004"
+          ],
+          "expected_ids": [
+            "INC-2026-015",
+            "RB-013_vector_fluentbit_logging"
+          ],
+          "latency_ms": 643.67,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-16",
+          "retrieved_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades",
+            "INC-2026-003",
+            "INC-2026-004",
+            "RB-002_postgres_connection_pool"
+          ],
+          "expected_ids": [
+            "INC-2026-016",
+            "RB-014_postgres_deadlock_cascades"
+          ],
+          "latency_ms": 616.245,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-17",
+          "retrieved_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-005",
+            "INC-2026-015",
+            "RB-004_api_gateway_504_timeouts"
+          ],
+          "expected_ids": [
+            "INC-2026-017",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 630.51,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-18",
+          "retrieved_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "INC-2026-015",
+            "INC-2026-017",
+            "INC-2026-002"
+          ],
+          "expected_ids": [
+            "INC-2026-018",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 615.064,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-19",
+          "retrieved_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam",
+            "RB-007_vpc_peering_network_partition",
+            "INC-2026-011",
+            "INC-2026-008"
+          ],
+          "expected_ids": [
+            "INC-2026-019",
+            "RB-015_envoy_rate_limit_ebs_iops_iam"
+          ],
+          "latency_ms": 634.43,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "scenario_id": "RET-20",
+          "retrieved_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution",
+            "INC-2026-013",
+            "INC-2026-005",
+            "INC-2026-017"
+          ],
+          "expected_ids": [
+            "INC-2026-020",
+            "RB-011_coredns_name_resolution"
+          ],
+          "latency_ms": 610.815,
+          "hit_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    }
+  ]
+}

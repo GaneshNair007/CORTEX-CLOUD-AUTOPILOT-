@@ -11,9 +11,8 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit",
-    "lint:console": "tsc --noEmit -p tsconfig.console.json",
-    "test": "npx tsx tests/run_tests.ts"
+    "lint": "tsc --noEmit -p tsconfig.console.json",
+    "test": "playwright test"
   },
   "dependencies": {
     "@flowstack-ui/brick": "0.2.2",

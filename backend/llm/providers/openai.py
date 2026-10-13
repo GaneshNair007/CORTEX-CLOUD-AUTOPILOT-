@@ -77,6 +77,7 @@ class OpenAIProvider(BaseLLMProvider):
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self._api_key}",
+                "User-Agent": "CORTEX-Autopilot/1.0",
             },
         )
 

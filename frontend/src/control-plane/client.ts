@@ -96,7 +96,7 @@ export async function request<T>(
   path: string,
   body?: unknown,
   signal?: AbortSignal,
-  timeout = 20000,
+  timeout = 90000,
 ): Promise<T> {
   const controller = new AbortController();
   const abort = () => controller.abort();

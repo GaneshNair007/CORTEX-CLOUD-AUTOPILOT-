@@ -353,10 +353,10 @@ function ConsoleApp({ reconnect }: { reconnect: () => void }) {
                 <WifiOff size={16} />
                 <span>
                   {health.loading && !health.data
-                    ? "Connecting to the control plane…"
+                    ? "Connecting to the control plane (waking up cloud backend)…"
                     : health.error?.includes("Console access")
                       ? health.error
-                      : "Backend unavailable. Live actions are disabled; existing snapshots may be stale."}
+                      : "Backend is warming up. If using free cloud hosting, it may take 20-30s to boot."}
                 </span>
                 <a href="#/settings">Connection settings</a>
                 <button onClick={health.refresh}>Retry</button>
